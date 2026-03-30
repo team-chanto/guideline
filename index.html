@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>コードレビュー（FB）基準ガイド</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --c-bg: #fafaf9;
+    --c-surface: #ffffff;
+    --c-text: #1c1917;
+    --c-text-sub: #57534e;
+    --c-text-muted: #a8a29e;
+    --c-border: #e7e5e4;
+    --c-border-strong: #d6d3d1;
+    --c-accent: #2563eb;
+    --c-accent-light: #eff6ff;
+    --c-ok: #16a34a;
+    --c-ok-bg: #f0fdf4;
+    --c-ok-border: #bbf7d0;
+    --c-ng: #dc2626;
+    --c-ng-bg: #fef2f2;
+    --c-ng-border: #fecaca;
+    --c-warn: #d97706;
+    --c-warn-bg: #fffbeb;
+    --c-warn-border: #fde68a;
+    --c-code-bg: #1e1e2e;
+    --c-code-text: #cdd6f4;
+    --c-code-comment: #6c7086;
+    --c-code-keyword: #cba6f7;
+    --c-code-string: #a6e3a1;
+    --c-code-tag: #89b4fa;
+    --c-sidebar-w: 260px;
+    --c-content-max: 820px;
+    --font-sans: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Menlo', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { font-size: 15px; scroll-behavior: smooth; scroll-padding-top: 2rem; }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--c-text);
+    background: var(--c-bg);
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--c-sidebar-w);
+    height: 100vh;
+    background: var(--c-surface);
+    border-right: 1px solid var(--c-border);
+    overflow-y: auto;
+    padding: 2rem 0;
+    z-index: 100;
+  }
+  .sidebar-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+    padding: 0 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .sidebar nav a {
+    display: block;
+    padding: 0.35rem 1.25rem;
+    font-size: 0.8rem;
+    color: var(--c-text-sub);
+    text-decoration: none;
+    line-height: 1.5;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }
+  .sidebar nav a:hover {
+    color: var(--c-accent);
+    background: var(--c-accent-light);
+    border-left-color: var(--c-accent);
+  }
+  .sidebar nav a.is-chapter {
+    font-weight: 700;
+    color: var(--c-text);
+    margin-top: 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  /* ── Main ── */
+  .main {
+    margin-left: var(--c-sidebar-w);
+    padding: 3rem 3rem 6rem;
+    max-width: calc(var(--c-content-max) + 6rem);
+  }
+
+  /* ── Header ── */
+  .doc-header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid var(--c-text);
+  }
+  .doc-header h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    margin-bottom: 1.25rem;
+  }
+  .doc-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .doc-meta-item {
+    font-size: 0.85rem;
+    color: var(--c-text-sub);
+  }
+  .doc-meta-item strong {
+    display: inline-block;
+    min-width: 4em;
+    color: var(--c-text);
+    font-weight: 700;
+  }
+
+  /* ── Headings ── */
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    margin-top: 4rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--c-border-strong);
+    position: relative;
+  }
+  h2 .chapter-num {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--c-accent);
+    background: var(--c-accent-light);
+    padding: 0.15em 0.5em;
+    border-radius: 4px;
+    margin-right: 0.5em;
+    vertical-align: middle;
+    letter-spacing: 0.05em;
+  }
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--c-text);
+  }
+  h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--c-text);
+  }
+
+  /* ── Prose ── */
+  p { margin-bottom: 1rem; }
+  strong { font-weight: 700; }
+  .section-lead {
+    font-size: 0.95rem;
+    color: var(--c-text-sub);
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── Callout boxes ── */
+  .callout {
+    padding: 1rem 1.25rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    border-left: 4px solid;
+  }
+  .callout--important {
+    background: var(--c-warn-bg);
+    border-color: var(--c-warn);
+  }
+  .callout--info {
+    background: var(--c-accent-light);
+    border-color: var(--c-accent);
+  }
+  .callout--future {
+    background: #f5f3ff;
+    border-color: #8b5cf6;
+  }
+  .callout-label {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  /* ── Tables ── */
+  .table-wrap {
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    line-height: 1.65;
+  }
+  thead th {
+    background: #f5f5f4;
+    font-weight: 700;
+    text-align: left;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 2px solid var(--c-border-strong);
+    white-space: nowrap;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+  }
+  tbody td {
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1px solid var(--c-border);
+    vertical-align: top;
+  }
+  tbody tr:hover { background: #fafaf9; }
+  td code, th code {
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    background: #f0efed;
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
+    color: var(--c-text);
+  }
+
+  /* ── Code blocks ── */
+  pre {
+    background: var(--c-code-bg);
+    color: var(--c-code-text);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    padding: 1.25rem 1.5rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  pre .comment { color: var(--c-code-comment); }
+  pre .ok-label {
+    color: var(--c-ok);
+    font-weight: 500;
+  }
+  pre .ng-label {
+    color: var(--c-ng);
+    font-weight: 500;
+  }
+
+  /* Inline code */
+  p code, li code, .callout code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: #f0efed;
+    padding: 0.12em 0.35em;
+    border-radius: 3px;
+    color: var(--c-text);
+  }
+
+  /* ── OK / NG indicators in tables ── */
+  .ok { color: var(--c-ok); font-weight: 700; }
+  .ng { color: var(--c-ng); font-weight: 700; }
+
+  /* ── Lists ── */
+  ul, ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+  }
+  li { margin-bottom: 0.35rem; }
+  li + li { margin-top: 0.2rem; }
+
+  /* ── Judgment box ── */
+  .judgment {
+    background: var(--c-accent-light);
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+
+  /* ── Directory tree ── */
+  .dir-tree {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.8;
+    background: #f5f5f4;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    color: var(--c-text-sub);
+  }
+  .dir-tree .folder { color: var(--c-accent); font-weight: 500; }
+  .dir-tree .note { color: var(--c-text-muted); }
+
+  /* ── Divider ── */
+  hr {
+    border: none;
+    border-top: 1px solid var(--c-border);
+    margin: 3rem 0;
+  }
+
+  /* ── Footer ── */
+  .doc-footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--c-border);
+    font-size: 0.8rem;
+    color: var(--c-text-muted);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 2rem 1.25rem 4rem; }
+  }
+
+  @media print {
+    .sidebar { display: none; }
+    .main { margin-left: 0; max-width: 100%; }
+    pre { white-space: pre-wrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ Sidebar ════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-title">目次</div>
+  <nav>
+    <a href="#ch1" class="is-chapter">1. HTML — 要素の使い分け</a>
+    <a href="#s1-1">1-1. ページ構造</a>
+    <a href="#s1-2">1-2. テキスト・コンテンツ</a>
+    <a href="#s1-3">1-3. インタラクティブ</a>
+    <a href="#s1-4">1-4. 画像</a>
+    <a href="#s1-5">1-5. id 属性</a>
+    <a href="#s1-6">1-6. 避けるべきパターン</a>
+    <a href="#ch2" class="is-chapter">2. HTML — 属性・メタ情報</a>
+    <a href="#s2-1">2-1. alt 属性</a>
+    <a href="#s2-2">2-2. メタ情報</a>
+    <a href="#ch3" class="is-chapter">3. CSS</a>
+    <a href="#s3-1">3-1. BEM</a>
+    <a href="#s3-2">3-2. SCSS</a>
+    <a href="#s3-3">3-3. 論理プロパティ</a>
+    <a href="#s3-4">3-4. hover</a>
+    <a href="#s3-5">3-5. Tailwind CSS</a>
+    <a href="#s3-6">3-6. レスポンシブ</a>
+    <a href="#s3-7">3-7. よくある指摘</a>
+    <a href="#ch4" class="is-chapter">4. JavaScript</a>
+    <a href="#s4-1">4-1. DOM 取得</a>
+    <a href="#s4-2">4-2. data 属性の命名</a>
+    <a href="#s4-3">4-3. 書き方の基本</a>
+    <a href="#s4-4">4-4. 関数化</a>
+    <a href="#s4-5">4-5. エラーハンドリング</a>
+    <a href="#ch5" class="is-chapter">5. アクセシビリティ</a>
+    <a href="#ch6" class="is-chapter">6. Git 運用</a>
+    <a href="#s6-1">6-1. Issue</a>
+    <a href="#s6-2">6-2. ブランチ</a>
+    <a href="#s6-3">6-3. コミット</a>
+    <a href="#s6-4">6-4. PR</a>
+    <a href="#ch7" class="is-chapter">7. デザインカンプ</a>
+    <a href="#s7-1">7-1. 確認観点</a>
+    <a href="#s7-2">7-2. 確認手順</a>
+    <a href="#s7-3">7-3. 情報がないとき</a>
+  </nav>
+</aside>
+
+<!-- ════════════════ Main ════════════════ -->
+<main class="main">
+
+<header class="doc-header">
+  <h1>コードレビュー（FB）基準ガイド</h1>
+  <div class="doc-meta">
+    <div class="doc-meta-item"><strong>対象者</strong> Webコーダー（実務未経験）</div>
+    <div class="doc-meta-item"><strong>目的</strong> 提出前のセルフチェックと、レビュー時のFB観点を共有する</div>
+    <div class="doc-meta-item"><strong>前提</strong> このガイドに書かれていることが「最低限クリアすべきライン」です。<br>慣れてきたら、ここに書かれていない観点も自分で拾えるようになることを目指してください。</div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 1. HTML — 要素の使い分け                     -->
+<!-- ═══════════════════════════════════════════ -->
+<h2 id="ch1"><span class="chapter-num">1</span>HTML — 要素の使い分け</h2>
+<p class="section-lead">見た目ではなく<strong>「その要素が何を意味するか」</strong>で選ぶ。<br>以下の要素を「いつ使うか・使わないか」を判断できることがゴール。</p>
+
+<h3 id="s1-1">1-1. ページ構造を作る要素</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>要素</th><th>いつ使うか</th><th>よくある間違い</th></tr></thead>
+  <tbody>
+    <tr><td><code>header</code></td><td>ページ全体、または各セクションの導入部分（ロゴ・ナビ・見出しなど）</td><td>ページ上部にあるからといって何でも <code>header</code> に入れる。中身に導入的な役割がなければ不要</td></tr>
+    <tr><td><code>main</code></td><td>ページ固有のメインコンテンツ。<strong>1ページに1つだけ</strong></td><td><code>main</code> が複数ある、または <code>header</code>/<code>footer</code> を <code>main</code> の中に入れてしまう</td></tr>
+    <tr><td><code>footer</code></td><td>ページ全体、または各セクションの補足情報（コピーライト・関連リンクなど）</td><td>フッターっぽい見た目だから <code>footer</code> にする。意味的に「補足・末尾情報」かで判断する</td></tr>
+    <tr><td><code>nav</code></td><td>主要なナビゲーションリンクのまとまり（グローバルナビ・パンくず等）</td><td>ページ内のあらゆるリンクの塊に <code>nav</code> をつける。主要な導線にだけ使う</td></tr>
+    <tr><td><code>section</code></td><td>見出し（<code>h2</code> 等）を持つ、意味的なまとまり</td><td>見出しを持たない <code>section</code>。スタイル目的なら <code>div</code> を使う</td></tr>
+    <tr><td><code>article</code></td><td><strong>それ単体で独立して成立するコンテンツ</strong>（ブログ記事・ニュース・カード1枚など）</td><td><code>section</code> との混同。「その部分だけ切り出して別の場所に貼っても意味が通じるか？」で判断する</td></tr>
+    <tr><td><code>div</code></td><td><strong>意味を持たない汎用コンテナ</strong>。スタイルやレイアウトの都合で囲みたいときに使う</td><td>意味のある要素（<code>section</code>、<code>article</code>、<code>nav</code> 等）の代わりに使う</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="s1-2">1-2. テキスト・コンテンツ要素</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>要素</th><th>いつ使うか</th><th>よくある間違い</th></tr></thead>
+  <tbody>
+    <tr><td><code>h1</code>〜<code>h6</code></td><td>見出し。<strong><code>h1</code> → <code>h2</code> → <code>h3</code> の順で、階層を飛ばさない</strong></td><td>フォントサイズを変えたいだけで <code>h3</code> を使う。見出し階層は文書構造で決める</td></tr>
+    <tr><td><code>p</code></td><td>段落（ひとまとまりの文章）</td><td>余白を作りたいだけで空の <code>p</code> を置く。余白は CSS で制御する</td></tr>
+    <tr><td><code>span</code></td><td><strong>インライン要素の汎用コンテナ</strong>。テキストの一部にスタイルを当てたいときに使う</td><td>ブロック要素の代わりに使う。<code>span</code> はインライン要素なので、レイアウト用途には <code>div</code> を使う</td></tr>
+    <tr><td><code>br</code></td><td><strong>同じ段落内での改行</strong>（住所・詩の行分け等）</td><td>レイアウト目的の改行。余白調整やブロック間の改行には使わない</td></tr>
+    <tr><td><code>ul</code></td><td>順序に意味がないリスト（ナビ項目・特徴一覧など）</td><td>リストなのに <code>div</code> を並べる</td></tr>
+    <tr><td><code>ol</code></td><td>順序に意味があるリスト（手順・ランキングなど）</td><td>手順なのに <code>ul</code> で書く</td></tr>
+    <tr><td><code>dl</code> / <code>dt</code> / <code>dd</code></td><td>用語とその説明のペア（FAQ・スペック表・定義リストなど）</td><td>単なるラベルと値の並びに <code>ul &gt; li</code> を使っている。対応関係がある場合は <code>dl</code> が適切</td></tr>
+    <tr><td><code>table</code></td><td>行と列で構造化されるデータ（料金表・比較表・スケジュール等）</td><td>レイアウト目的で <code>table</code> を使う。表形式のデータにだけ使う</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong><code>div</code> と <code>span</code> の使い分け</strong>：<code>div</code> = ブロック要素の汎用コンテナ（レイアウト・囲み用）、<code>span</code> = インライン要素の汎用コンテナ（テキストの一部にスタイルを当てる用）。どちらも意味を持たないので、意味のある要素で代替できる場合はそちらを使う。</p>
+
+<h3 id="s1-3">1-3. インタラクティブ要素</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>要素</th><th>いつ使うか</th><th>よくある間違い</th></tr></thead>
+  <tbody>
+    <tr><td><code>a</code></td><td><strong>別ページ・別URLへの遷移</strong>。<code>href</code> 属性が必須</td><td><code>href="#"</code> にして JS でクリックイベントを処理する → それは <code>button</code> の役割</td></tr>
+    <tr><td><code>button</code></td><td><strong>その場で何かを実行する操作</strong>（モーダルを開く、タブを切り替える等）</td><td>見た目がボタンだから <code>a</code> にスタイルを当てる。遷移しないなら <code>button</code> を使う</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="judgment">判断基準：「クリックしたらどこかに飛ぶか？」→ Yes なら <code>a</code>、No なら <code>button</code>。</div>
+
+<h3 id="s1-4">1-4. 画像要素</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>要素</th><th>いつ使うか</th><th>よくある間違い</th></tr></thead>
+  <tbody>
+    <tr><td><code>img</code></td><td>コンテンツとして意味のある画像。<strong><code>alt</code> 属性は必須</strong>（後述）</td><td>装飾画像に <code>img</code> を使って意味のない <code>alt</code> を書く → 装飾は CSS <code>background-image</code> で</td></tr>
+    <tr><td><code>picture</code></td><td><strong>デバイスや画面幅に応じて出し分ける画像</strong>。<code>source</code> で条件を指定し、<code>img</code> をフォールバックにする</td><td>すべての画像を <code>picture</code> にする必要はない。出し分け不要なら <code>img</code> だけで十分</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><code>picture</code> の基本構文：</p>
+<pre><span class="comment">&lt;!-- picture + source でフォーマット・デバイスの出し分け --&gt;</span>
+&lt;picture&gt;
+  &lt;source srcset="/img/hero-sp.webp" media="(max-width: 767px)" type="image/webp"&gt;
+  &lt;source srcset="/img/hero-pc.webp" type="image/webp"&gt;
+  &lt;img src="/img/hero-pc.jpg" alt="メインビジュアルの説明" width="1280" height="600"&gt;
+&lt;/picture&gt;</pre>
+
+<h4><code>width</code> / <code>height</code> 属性は必ずつける</h4>
+<p><code>img</code> タグには <strong><code>width</code> と <code>height</code> を必ず指定する</strong>。</p>
+<pre><span class="ok-label">&lt;!-- ✅ OK --&gt;</span>
+&lt;img src="/img/photo.jpg" alt="写真の説明" width="800" height="600"&gt;
+
+<span class="ng-label">&lt;!-- ❌ NG — width / height がない --&gt;</span>
+&lt;img src="/img/photo.jpg" alt="写真の説明"&gt;</pre>
+
+<p><strong>理由</strong>：ブラウザが画像の読み込み前にスペースを確保できるようになり、読み込み中にレイアウトがガタッとずれる現象（CLS: Cumulative Layout Shift）を防げる。指定しないとページの表示品質と Core Web Vitals のスコアに悪影響が出る。</p>
+<p>値はカンプや画像の実寸から取得する。CSS で <code>width: 100%</code> にして可変にする場合でも、HTML 側の属性はアスペクト比の算出に使われるので省略しない。</p>
+
+<h4><code>loading</code> 属性と <code>fetchpriority</code> 属性</h4>
+<p>画像の読み込みタイミングを制御する属性。ページの表示速度に直結するので、すべての <code>img</code> に意識的に設定する。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>属性</th><th>値</th><th>意味</th><th>いつ使うか</th></tr></thead>
+  <tbody>
+    <tr><td><code>loading</code></td><td><code>lazy</code></td><td>画面外にある画像は、スクロールで近づくまで読み込まない</td><td><strong>ファーストビュー以外の画像すべて</strong></td></tr>
+    <tr><td><code>loading</code></td><td><code>eager</code>（デフォルト）</td><td>ページ読み込みと同時に取得する</td><td>ファーストビュー内の画像</td></tr>
+    <tr><td><code>fetchpriority</code></td><td><code>high</code></td><td>ブラウザに「この画像を優先的に取得して」と伝える</td><td><strong>ファーストビューのメインビジュアル（LCP 要素）</strong></td></tr>
+    <tr><td><code>fetchpriority</code></td><td><code>low</code></td><td>優先度を下げる</td><td>ページ下部のあまり重要でない画像</td></tr>
+  </tbody>
+</table>
+</div>
+
+<pre><span class="ok-label">&lt;!-- ✅ ファーストビューのメインビジュアル（LCP 候補） --&gt;</span>
+&lt;img
+  src="/img/hero-main.webp"
+  alt="メインビジュアルの説明"
+  width="1280" height="600"
+  fetchpriority="high"
+&gt;
+
+<span class="ok-label">&lt;!-- ✅ ファーストビュー内だが、メインビジュアルではない --&gt;</span>
+&lt;img
+  src="/img/header-logo.svg"
+  alt="サイトロゴ"
+  width="200" height="40"
+&gt;
+
+<span class="ok-label">&lt;!-- ✅ ファーストビュー外（スクロールしないと見えない） --&gt;</span>
+&lt;img
+  src="/img/about-team-photo.webp"
+  alt="チーム集合写真"
+  width="800" height="600"
+  loading="lazy"
+&gt;</pre>
+
+<div class="judgment">判断基準：ページを開いた瞬間に見えるか見えないかで分ける。</div>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>画像の位置</th><th><code>loading</code></th><th><code>fetchpriority</code></th></tr></thead>
+  <tbody>
+    <tr><td>ファーストビュー内 — メインビジュアル</td><td><code>eager</code>（デフォルト、省略可）</td><td><code>high</code></td></tr>
+    <tr><td>ファーストビュー内 — それ以外</td><td><code>eager</code>（デフォルト、省略可）</td><td>指定なし</td></tr>
+    <tr><td>ファーストビュー外</td><td><code>lazy</code></td><td>指定なし（必要に応じて <code>low</code>）</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>よくある間違い</th><th>なぜダメか</th></tr></thead>
+  <tbody>
+    <tr><td>すべての画像に <code>loading="lazy"</code> をつける</td><td>ファーストビューの画像まで遅延されると、ユーザーに見える画像の表示が遅くなる。LCP スコアも悪化する</td></tr>
+    <tr><td><code>fetchpriority="high"</code> を大量につける</td><td>全部が高優先だとブラウザが優先順位をつけられない。メインビジュアル等の1〜2枚に限定する</td></tr>
+    <tr><td><code>loading="lazy"</code> と <code>fetchpriority="high"</code> を同時につける</td><td>矛盾する指定。遅延したいのか優先したいのかブラウザが判断できない</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h4>画像フォーマット</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>フォーマット</th><th>用途</th><th>備考</th></tr></thead>
+  <tbody>
+    <tr><td><strong>WebP</strong></td><td>写真・イラスト全般。基本はこれを使う</td><td>JPEG/PNG より軽量。ほぼ全ブラウザ対応済み</td></tr>
+    <tr><td>JPEG</td><td>WebP 非対応環境のフォールバック、または納品指定がある場合</td><td>—</td></tr>
+    <tr><td>PNG</td><td>透過が必要な画像</td><td>ファイルサイズが大きくなりがちなので、透過不要なら WebP を使う</td></tr>
+    <tr><td>SVG</td><td>アイコン・ロゴ等のベクター画像</td><td>拡大しても劣化しない。色変更も CSS で可能</td></tr>
+  </tbody>
+</table>
+</div>
+<p><strong>基本方針</strong>：写真系は WebP、アイコン・ロゴ系は SVG。<code>picture</code> + <code>source</code> で WebP を優先しつつ、<code>img</code> の <code>src</code> にフォールバック画像（JPEG/PNG）を指定する。</p>
+
+<h4>画像ファイルの命名規則</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>ルール</th><th>例</th><th>NG 例</th></tr></thead>
+  <tbody>
+    <tr><td><strong>ケバブケース</strong>（小文字 + ハイフン区切り）</td><td><code>hero-main.webp</code></td><td><code>heroMain.webp</code>、<code>Hero_Main.webp</code></td></tr>
+    <tr><td><strong>内容が伝わる名前</strong>をつける</td><td><code>about-team-photo.webp</code></td><td><code>img01.webp</code>、<code>photo.webp</code>、<code>test.jpg</code></td></tr>
+    <tr><td><strong>デバイス・サイズの接尾辞</strong>をつける</td><td><code>hero-main-sp.webp</code>、<code>hero-main-pc.webp</code></td><td><code>hero-main-2.webp</code></td></tr>
+    <tr><td><strong>連番は意味と併用</strong>する</td><td><code>news-thumb-01.webp</code></td><td><code>01.webp</code>、<code>02.webp</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>ディレクトリ構成の例：</p>
+<div class="dir-tree">
+<span class="folder">/img/</span><br>
+&nbsp;&nbsp;<span class="folder">common/</span> <span class="note">← サイト共通（ロゴ・アイコン等）</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;logo.svg<br>
+&nbsp;&nbsp;&nbsp;&nbsp;icon-arrow.svg<br>
+&nbsp;&nbsp;<span class="folder">top/</span> <span class="note">← ページ単位で分ける</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;hero-main-pc.webp<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hero-main-sp.webp<br>
+&nbsp;&nbsp;&nbsp;&nbsp;news-thumb-01.webp<br>
+&nbsp;&nbsp;<span class="folder">about/</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;about-team-photo.webp
+</div>
+
+<h3 id="s1-5">1-5. id 属性の使い方</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>用途</th><th>可否</th><th>理由</th></tr></thead>
+  <tbody>
+    <tr><td>アンカーリンクの遷移先</td><td class="ng">使わない</td><td>—</td></tr>
+    <tr><td>CSS のスタイル指定</td><td class="ng">使わない</td><td>詳細度が高く再利用できない。class を使う</td></tr>
+    <tr><td>計測タグ（GA イベント等）</td><td class="ng">先方指定がない限り使わない</td><td><code>data-*</code> 属性で対応。id は一意制約があり管理が煩雑</td></tr>
+    <tr><td><code>label</code> の <code>for</code> 属性</td><td class="ok">OK</td><td>フォーム要素との紐付けは id が必要</td></tr>
+  </tbody>
+</table>
+</div>
+
+<pre><span class="ng-label">&lt;!-- ❌ NG — アンカーリンクや計測に id を使う --&gt;</span>
+&lt;section id="about"&gt;...&lt;/section&gt;
+&lt;button id="cta-button"&gt;お問い合わせ&lt;/button&gt;
+
+<span class="ok-label">&lt;!-- ✅ OK — data 属性で管理 --&gt;</span>
+&lt;section data-section="about"&gt;...&lt;/section&gt;
+&lt;button data-gtm="cta-button"&gt;お問い合わせ&lt;/button&gt;
+
+<span class="ok-label">&lt;!-- ✅ OK — フォームの紐付けは id --&gt;</span>
+&lt;label for="email"&gt;メールアドレス&lt;/label&gt;
+&lt;input id="email" type="email"&gt;</pre>
+
+<h3 id="s1-6">1-6. 避けるべきパターンまとめ</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>やりがちなこと</th><th>なぜダメか</th><th>正しい対応</th></tr></thead>
+  <tbody>
+    <tr><td>とりあえず <code>div</code> で囲む</td><td>意味を持たないので構造が伝わらない</td><td>上の表を見て適切な要素を選ぶ</td></tr>
+    <tr><td><code>br</code> で余白を作る</td><td>メンテ不能。デバイスごとに崩れる</td><td>CSS の <code>margin</code> / <code>padding</code> / <code>gap</code> で</td></tr>
+    <tr><td>全部 <code>a</code> タグにする</td><td>キーボード操作・アクセシビリティが壊れる</td><td>遷移 → <code>a</code>、操作 → <code>button</code></td></tr>
+    <tr><td><code>section</code> に見出しがない</td><td><code>section</code> は意味的なまとまり</td><td>見出しがないなら <code>div</code> にする</td></tr>
+    <tr><td><code>span</code> でブロック要素を代用する</td><td><code>span</code> はインライン用</td><td>レイアウト目的のコンテナは <code>div</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 2. HTML — 属性・メタ情報                      -->
+<!-- ═══════════════════════════════════════════ -->
+<h2 id="ch2"><span class="chapter-num">2</span>HTML — 属性・メタ情報</h2>
+
+<h3 id="s2-1">2-1. alt 属性</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>画像の種類</th><th>alt の書き方</th><th>例</th></tr></thead>
+  <tbody>
+    <tr><td>意味のある画像</td><td>画像の内容を端的に書く</td><td><code>alt="代表取締役 山田太郎のプロフィール写真"</code></td></tr>
+    <tr><td>装飾画像</td><td>空の alt を設定する</td><td><code>alt=""</code></td></tr>
+    <tr><td>リンク内の画像（テキストなし）</td><td>リンク先の情報を書く</td><td><code>alt="会社概要ページへ"</code></td></tr>
+  </tbody>
+</table>
+</div>
+<div class="callout callout--important"><span class="callout-label">必須</span>alt 未設定（属性自体がない）は NG。空でもいいから必ず <code>alt</code> 属性をつける。</div>
+
+<h3 id="s2-2">2-2. ページごとに必須のメタ情報</h3>
+<p><strong>すべてのページで以下が入っていることを確認する。</strong></p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>項目</th><th>確認すること</th></tr></thead>
+  <tbody>
+    <tr><td><code>&lt;title&gt;</code></td><td>ページごとに固有のタイトルが入っているか。全ページ同じになっていないか</td></tr>
+    <tr><td><code>&lt;meta name="description"&gt;</code></td><td>ページの内容を要約した説明文が入っているか（120〜160文字目安）</td></tr>
+    <tr><td>OGP 情報</td><td><code>og:title</code> / <code>og:description</code> / <code>og:image</code> / <code>og:url</code> / <code>og:type</code> が設定されているか</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>OGP の基本セット：</p>
+<pre>&lt;meta property="og:title" content="ページタイトル"&gt;
+&lt;meta property="og:description" content="ページの説明文"&gt;
+&lt;meta property="og:image" content="https://example.com/ogp.jpg"&gt;
+&lt;meta property="og:url" content="https://example.com/page/"&gt;
+&lt;meta property="og:type" content="website"&gt;
+&lt;meta name="twitter:card" content="summary_large_image"&gt;</pre>
+
+<p><strong>確認方法</strong>：OGP の表示確認は SNS のデバッガー（Facebook Sharing Debugger 等）で実際の表示を見る。</p>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 3. CSS                                      -->
+<!-- ═══════════════════════════════════════════ -->
+<h2 id="ch3"><span class="chapter-num">3</span>CSS</h2>
+
+<h3 id="s3-1">3-1. 設計：BEM</h3>
+<p>クラス命名は <strong>BEM（Block Element Modifier）</strong> に従う。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>概念</th><th>命名ルール</th><th>例</th></tr></thead>
+  <tbody>
+    <tr><td>Block</td><td>独立したコンポーネント</td><td><code>.card</code></td></tr>
+    <tr><td>Element</td><td>Block の中の構成要素。<code>__</code> で繋ぐ</td><td><code>.card__title</code></td></tr>
+    <tr><td>Modifier</td><td>状態やバリエーション。<code>--</code> で繋ぐ</td><td><code>.card--featured</code></td></tr>
+  </tbody>
+</table>
+</div>
+<div class="table-wrap">
+<table>
+  <thead><tr><th class="ng">NG</th><th>なぜダメか</th><th class="ok">OK</th></tr></thead>
+  <tbody>
+    <tr><td><code>.card__title__icon</code></td><td>Element を多段ネストしない。BEM は2階層まで</td><td><code>.card__icon</code></td></tr>
+    <tr><td><code>.cardTitle</code></td><td>BEM はケバブケース＋<code>__</code>/<code>--</code> で区切る</td><td><code>.card__title</code></td></tr>
+    <tr><td><code>.red-button</code></td><td>見た目ベースの命名</td><td><code>.button--primary</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="s3-2">3-2. SCSS のルール</h3>
+
+<h4>スタイルの「影響範囲」を理解する</h4>
+<p>CSS は本来 <strong>グローバルスコープ</strong> で動く。つまり、あるファイルに <code>.card { color: red; }</code> と書いたら、サイト内のすべての <code>.card</code> に影響する。これが CSS で最も事故が起きやすいポイント。</p>
+<p>この「影響範囲の制御」には、大きく分けて2つのアプローチがある。</p>
+
+<p><strong>① フレームワークが自動でスコープを切る方法（CSS Modules）</strong></p>
+<p>Astro や Next.js では、コンポーネントごとにスタイルのスコープが自動で閉じる仕組みがある。</p>
+<pre><span class="comment">// Astro の場合 — &lt;style&gt; に書いたスタイルはそのコンポーネント内だけに効く</span>
+<span class="comment">// Component.astro</span>
+&lt;div class="card"&gt;...&lt;/div&gt;
+&lt;style&gt;
+  .card { color: red; }  <span class="comment">/* このファイルの .card にしか効かない */</span>
+&lt;/style&gt;
+
+<span class="comment">// Next.js (CSS Modules) の場合 — ファイル名を .module.css にする</span>
+<span class="comment">// Card.module.css</span>
+.card { color: red; }  <span class="comment">/* import したコンポーネント内の .card にしか効かない */</span>
+
+<span class="comment">// Card.jsx</span>
+import styles from './Card.module.css';
+&lt;div className={styles.card}&gt;...&lt;/div&gt;</pre>
+<p>これらの仕組みでは、ビルド時にクラス名が <code>.card_x1a2b</code> のようにハッシュ付きの一意な名前に変換される。だから他のコンポーネントの <code>.card</code> と衝突しない。<strong>フレームワークが影響範囲を自動で管理してくれる。</strong></p>
+
+<p><strong>② 自分でセレクタを使ってスコープを切る方法（SCSS + BEM）</strong></p>
+<p>CSS Modules のような仕組みがない環境（WordPress のテーマ、素の HTML + SCSS のプロジェクトなど）では、<strong>自分でクラス名の設計によって影響範囲を制御する必要がある</strong>。これが BEM とページクラスによるネストの役割。</p>
+<pre><span class="ok-label">// ✅ .p-about で囲むことで「会社概要ページ内の .card」に影響範囲を限定</span>
+.p-about {
+  .card { color: red; }       <span class="comment">/* TOPページの .card には影響しない */</span>
+  .card__title { ... }
+}
+
+<span class="ok-label">// ✅ .p-top で囲むことで「TOPページ内の .card」に限定</span>
+.p-top {
+  .card { color: blue; }      <span class="comment">/* 会社概要ページの .card には影響しない */</span>
+  .card__title { ... }
+}</pre>
+<pre><span class="comment">&lt;!-- about.html --&gt;</span>
+&lt;main class="p-about"&gt;
+  &lt;div class="card"&gt;...&lt;/div&gt;  <span class="comment">&lt;!-- color: red が当たる --&gt;</span>
+&lt;/main&gt;
+
+<span class="comment">&lt;!-- top.html --&gt;</span>
+&lt;main class="p-top"&gt;
+  &lt;div class="card"&gt;...&lt;/div&gt;  <span class="comment">&lt;!-- color: blue が当たる --&gt;</span>
+&lt;/main&gt;</pre>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>環境</th><th>影響範囲の制御方法</th><th>誰がスコープを管理するか</th></tr></thead>
+  <tbody>
+    <tr><td>Astro / Next.js（CSS Modules）</td><td>フレームワークがクラス名をハッシュ化</td><td><strong>フレームワークが自動で管理</strong></td></tr>
+    <tr><td>WordPress / 素の HTML + SCSS</td><td>ページクラス + BEM で命名を設計</td><td><strong>自分で管理する</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout callout--important"><span class="callout-label">重要</span>どちらのアプローチでも「このスタイルはどこに影響するのか」を常に意識すること。SCSS で何気なく書いた <code>.card { ... }</code> が、意図しないページの <code>.card</code> を壊す事故は実務で頻繁に起きる。</div>
+
+<h4>ネスト禁止（ページ区切り以外）</h4>
+<p>SCSS のネストは <strong>ページクラスによるスコープの区切り</strong> としてのみ使う。それ以外のネストは禁止。</p>
+<pre><span class="ok-label">// ✅ OK — ページ単位の区切りとしてのネスト</span>
+.p-about {
+  .card { ... }
+  .card__title { ... }
+}
+
+<span class="ng-label">// ❌ NG — BEM をネストで再現</span>
+.card {
+  &amp;__title { ... }
+  &amp;--active { ... }
+}</pre>
+
+<h4><code>&amp;</code> によるクラス名の省略も禁止</h4>
+<p><code>&amp;</code> を使って BEM のクラス名を組み立てない。理由は2つ。</p>
+<ol>
+  <li><strong>検索性が下がる</strong>：<code>.card__title</code> でファイル内を検索しても、<code>&amp;__title</code> ではヒットしない</li>
+  <li><strong>生成される CSS が見えづらい</strong>：ネストが深くなるとどんなセレクタが出力されるか追いにくい</li>
+</ol>
+<pre><span class="ng-label">// ❌ NG — &amp; でクラス名を省略</span>
+.card {
+  &amp;__title { color: red; }
+  &amp;__body { font-size: 14px; }
+  &amp;--featured { background: yellow; }
+}
+
+<span class="ok-label">// ✅ OK — クラス名をそのまま書く</span>
+.card__title { color: red; }
+.card__body { font-size: 14px; }
+.card--featured { background: yellow; }</pre>
+
+<h3 id="s3-3">3-3. 論理プロパティ</h3>
+<p><strong><code>margin-inline: auto</code> 以外の論理プロパティは使わない。</strong></p>
+<div class="callout callout--future"><span class="callout-label">今後の予定</span>CSS Lint で物理プロパティ／論理プロパティの統一ルールを整備する予定。現時点ではルールが未確定のため、混在を避ける。</div>
+<pre><span class="ok-label">/* ✅ OK */</span>
+.container { margin-inline: auto; }
+.card { margin-top: 16px; padding-left: 24px; }
+
+<span class="ng-label">/* ❌ NG — margin-inline: auto 以外の論理プロパティ */</span>
+.card { margin-block-start: 16px; padding-inline-start: 24px; }</pre>
+
+<h3 id="s3-4">3-4. hover の実装：<code>any-hover</code> を使う</h3>
+<p>hover スタイルは <strong><code>@media (any-hover: hover)</code></strong> で囲む。タッチデバイスで hover が残り続ける問題を防ぐため。</p>
+<pre><span class="ok-label">/* ✅ OK */</span>
+@media (any-hover: hover) {
+  .button:hover {
+    opacity: 0.7;
+  }
+}
+
+<span class="ng-label">/* ❌ NG — メディアクエリなしで hover を書く */</span>
+.button:hover {
+  opacity: 0.7;
+}</pre>
+<p><strong>Tailwind の場合</strong>も同様に、カスタムバリアント or CSS 側で制御する。</p>
+
+<h3 id="s3-5">3-5. Tailwind CSS（v4 基準）</h3>
+<p>Tailwind v4 では <code>tailwind.config.js</code> ではなく <strong><code>global.css</code>（CSS ファイル）でテーマを定義</strong> する。</p>
+
+<h4><code>text-sm</code> 等のデフォルトフォントサイズクラスは使わない</h4>
+<p>Tailwind のデフォルトテキストユーティリティ（<code>text-xs</code>、<code>text-sm</code>、<code>text-base</code>、<code>text-lg</code> 等）は <strong>使用禁止</strong>。</p>
+<p><strong>理由</strong>：これらのクラスには <code>font-size</code> と一緒に <code>line-height</code> が抱き合わせで設定されている。</p>
+<pre><span class="comment">/* Tailwind のデフォルト text-sm の中身 */</span>
+.text-sm {
+  font-size: 0.875rem;    <span class="comment">/* 14px */</span>
+  line-height: 1.25rem;   <span class="comment">/* ← これが勝手についてくる */</span>
+}</pre>
+<p>プロジェクトでは <code>line-height: 1.2</code> を基本としているため、デフォルトの <code>line-height</code> が邪魔になる。フォントサイズは <code>global.css</code> の <code>@theme</code> で独自に定義して使う。</p>
+
+<h4>変数の定義</h4>
+<pre><span class="comment">/* global.css */</span>
+@import "tailwindcss";
+
+@theme {
+  <span class="comment">/* フォントサイズ — line-height を含まない純粋なサイズだけ定義 */</span>
+  --font-size-xs: 0.75rem;     <span class="comment">/* 12px */</span>
+  --font-size-sm: 0.875rem;    <span class="comment">/* 14px */</span>
+  --font-size-base: 1rem;      <span class="comment">/* 16px */</span>
+  --font-size-lg: 1.125rem;    <span class="comment">/* 18px */</span>
+  --font-size-xl: 1.25rem;     <span class="comment">/* 20px */</span>
+  --font-size-2xl: 1.5rem;     <span class="comment">/* 24px */</span>
+  --font-size-3xl: 1.875rem;   <span class="comment">/* 30px */</span>
+
+  <span class="comment">/* カラー */</span>
+  --color-brand: #1a2b3c;
+  --color-accent: #e63946;
+
+  <span class="comment">/* スペーシング */</span>
+  --spacing-18: 4.5rem;
+}</pre>
+
+<pre><span class="ng-label">&lt;!-- ❌ NG — 任意値の多用 --&gt;</span>
+&lt;div class="text-[#1a2b3c] mt-[72px] p-[18px]"&gt;...&lt;/div&gt;
+
+<span class="ok-label">&lt;!-- ✅ OK — @theme で定義した変数を使う --&gt;</span>
+&lt;div class="text-brand mt-18 p-18"&gt;...&lt;/div&gt;</pre>
+
+<div class="callout callout--info"><span class="callout-label">注意</span><code>@theme</code> で <code>--font-size-sm</code> 等を再定義すると、Tailwind のデフォルト値が上書きされる。チーム全員がこの前提を共有していること。</div>
+
+<h4>任意値（<code>[]</code>）のルール</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>基準</th></tr></thead>
+  <tbody>
+    <tr><td>任意値（<code>[]</code>）</td><td><strong>むやみに使わない</strong>。Tailwind のユーティリティクラスで済むならそちらを使う</td></tr>
+    <tr><td>繰り返す任意値</td><td>同じ値を複数箇所で使う場合は <code>global.css</code> の <code>@theme</code> で変数として定義する</td></tr>
+    <tr><td><code>@apply</code></td><td>コンポーネント的に繰り返すスタイルのまとめに使う。多用しすぎないこと</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="s3-6">3-6. レスポンシブ</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>基準</th></tr></thead>
+  <tbody>
+    <tr><td>方針</td><td><strong>SPファースト</strong>。デフォルトのスタイルを SP 向けに書き、ブレークポイントで PC 向けを上書きする</td></tr>
+    <tr><td>ブレークポイント</td><td><strong>Tailwind のデフォルトに準ずる</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>プレフィックス</th><th>最小幅</th><th>主な用途</th></tr></thead>
+  <tbody>
+    <tr><td>（なし）</td><td>—</td><td>SP（ベース）</td></tr>
+    <tr><td><code>sm</code></td><td>640px</td><td>—</td></tr>
+    <tr><td><code>md</code></td><td>768px</td><td>タブレット</td></tr>
+    <tr><td><code>lg</code></td><td>1024px</td><td>PC</td></tr>
+    <tr><td><code>xl</code></td><td>1280px</td><td>ワイドPC</td></tr>
+    <tr><td><code>2xl</code></td><td>1536px</td><td>—</td></tr>
+  </tbody>
+</table>
+</div>
+<pre><span class="comment">// SPファースト = min-width で上書き</span>
+@media (min-width: 768px) { ... }  <span class="comment">// md</span>
+@media (min-width: 1024px) { ... } <span class="comment">// lg</span></pre>
+
+<h3 id="s3-7">3-7. よくある指摘パターン</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>やりがちなミス</th><th>正しい対応</th></tr></thead>
+  <tbody>
+    <tr><td>固定の <code>height</code> でコンテンツ量で崩れる</td><td><code>min-height</code> や <code>padding</code> で柔軟に</td></tr>
+    <tr><td>hover を <code>@media (any-hover: hover)</code> で囲んでいない</td><td>必ず囲む。タッチデバイスで hover が残る</td></tr>
+    <tr><td>focus 状態を忘れる</td><td><code>focus-visible</code> 等でキーボード操作時もフォーカスを見えるように</td></tr>
+    <tr><td><code>z-index: 9999</code></td><td>プロジェクト内の階層ルールを確認。なければ相談</td></tr>
+    <tr><td><code>!important</code></td><td>原則禁止。使う場合はコメントで理由を残す</td></tr>
+    <tr><td><code>id</code> でスタイルを当てる</td><td>再利用できないので <code>class</code> を使う</td></tr>
+    <tr><td><code>margin-inline: auto</code> 以外の論理プロパティ</td><td>現時点では物理プロパティで統一</td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 4. JavaScript                               -->
+<!-- ═══════════════════════════════════════════ -->
+<h2 id="ch4"><span class="chapter-num">4</span>JavaScript</h2>
+
+<h3 id="s4-1">4-1. DOM の取得：data 属性 + querySelector</h3>
+<p>DOM を操作する要素は <strong><code>data-*</code> 属性をつけて、<code>querySelector</code> で取得する</strong>。class や id で DOM を取得しない。</p>
+<pre><span class="ok-label">&lt;!-- ✅ OK — data 属性をつける --&gt;</span>
+&lt;button data-action="toggle-menu"&gt;メニュー&lt;/button&gt;
+&lt;nav data-element="menu"&gt;...&lt;/nav&gt;</pre>
+<pre><span class="ok-label">// ✅ OK — querySelector + data 属性</span>
+const trigger = document.querySelector('[data-action="toggle-menu"]');
+const menu = document.querySelector('[data-element="menu"]');
+
+trigger.addEventListener('click', () =&gt; {
+  menu.classList.toggle('is-open');
+});</pre>
+<pre><span class="ng-label">// ❌ NG — class で DOM を引っ張る</span>
+const trigger = document.querySelector('.js-menu-trigger');
+<span class="comment">// → class はスタイル用。JS のフックと CSS が密結合になる</span>
+
+<span class="ng-label">// ❌ NG — getElementById</span>
+const menu = document.getElementById('menu');
+<span class="comment">// → id はフォームの label 紐付け以外で使わない方針</span></pre>
+<p><strong>理由</strong>：class 名の変更で JS が壊れるのを防ぐ。<code>data-*</code> 属性なら「この要素は JS から参照される」ことが HTML を見ただけでわかる。</p>
+
+<h3 id="s4-2">4-2. data 属性の命名ルール</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>属性</th><th>用途</th><th>例</th></tr></thead>
+  <tbody>
+    <tr><td><code>data-action</code></td><td>クリック等のトリガーとなる要素</td><td><code>data-action="toggle-menu"</code></td></tr>
+    <tr><td><code>data-element</code></td><td>JS から参照・操作される対象要素</td><td><code>data-element="menu"</code></td></tr>
+    <tr><td><code>data-state</code></td><td>状態管理が必要な場合</td><td><code>data-state="open"</code></td></tr>
+    <tr><td><code>data-gtm</code></td><td>計測タグ用（先方から id 指定がない場合）</td><td><code>data-gtm="cta-button"</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="s4-3">4-3. 書き方の基本</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>基準</th><th>理由</th></tr></thead>
+  <tbody>
+    <tr><td><code>var</code> の使用</td><td>禁止。<code>const</code> を基本、再代入が必要な場合のみ <code>let</code></td><td>スコープの事故を防ぐ</td></tr>
+    <tr><td><code>console.log</code></td><td>提出前に全て削除する</td><td>本番に残ると情報漏洩・パフォーマンス劣化のリスク</td></tr>
+    <tr><td>未使用コード</td><td>使っていない変数・関数・import は削除する</td><td>読む人の認知負荷を上げるだけ</td></tr>
+    <tr><td>null ガード</td><td><code>querySelector</code> の戻り値が <code>null</code> の場合を想定する</td><td>ページによって要素がない場合にエラーで止まる</td></tr>
+  </tbody>
+</table>
+</div>
+<pre><span class="ok-label">// ✅ null ガードの例</span>
+const menu = document.querySelector('[data-element="menu"]');
+if (!menu) return;</pre>
+
+<h3 id="s4-4">4-4. 関数化：変数操作が連続したら分割する</h3>
+<p>変数の操作が連続で続く場合は、<strong>処理のまとまりごとに関数に切り出す</strong>。「何をしているか」が関数名で伝わる状態を目指す。</p>
+
+<pre><span class="ng-label">// ❌ NG — 変数操作がベタ書きで連続し、何をしているか追いにくい</span>
+const items = document.querySelectorAll('[data-element="item"]');
+const prices = [];
+items.forEach((item) =&gt; {
+  const raw = item.dataset.price;
+  const num = parseInt(raw, 10);
+  if (!isNaN(num)) { prices.push(num); }
+});
+const total = prices.reduce((sum, p) =&gt; sum + p, 0);
+const tax = Math.floor(total * 0.1);
+const totalWithTax = total + tax;
+const formatted = totalWithTax.toLocaleString();
+document.querySelector('[data-element="total"]').textContent = `¥${formatted}`;</pre>
+
+<pre><span class="ok-label">// ✅ OK — 処理のまとまりを関数に切り出す</span>
+function collectPrices() {
+  const items = document.querySelectorAll('[data-element="item"]');
+  const prices = [];
+  items.forEach((item) =&gt; {
+    const num = parseInt(item.dataset.price, 10);
+    if (!isNaN(num)) prices.push(num);
+  });
+  return prices;
+}
+
+function calcTotalWithTax(prices) {
+  const total = prices.reduce((sum, p) =&gt; sum + p, 0);
+  const tax = Math.floor(total * 0.1);
+  return total + tax;
+}
+
+function renderTotal(amount) {
+  const el = document.querySelector('[data-element="total"]');
+  if (!el) return;
+  el.textContent = `¥${amount.toLocaleString()}`;
+}
+
+<span class="comment">// メインの流れが一目でわかる</span>
+const prices = collectPrices();
+const total = calcTotalWithTax(prices);
+renderTotal(total);</pre>
+
+<div class="judgment">判断基準：「この処理を1行の日本語で説明できるか？」を考える。説明できるまとまりが関数1つの粒度。</div>
+
+<h3 id="s4-5">4-5. エラーハンドリング</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>基準</th></tr></thead>
+  <tbody>
+    <tr><td>API 通信</td><td><code>fetch</code> 等の非同期処理は <code>try-catch</code> で囲む</td></tr>
+    <tr><td>ユーザー入力</td><td>フォーム値は必ずバリデーションする（空文字・型・桁数）</td></tr>
+    <tr><td>エラー時の UI</td><td>エラーが起きたことをユーザーに伝える手段があるか</td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 5. アクセシビリティ                           -->
+<!-- ═══════════════════════════════════════════ -->
+<h2 id="ch5"><span class="chapter-num">5</span>アクセシビリティ（現状の方針）</h2>
+<div class="callout callout--future"><span class="callout-label">今後の予定</span>今後、社内ガイドラインとして正式に整備する予定の領域です。現時点では以下の最低限の対応を行い、詳細なルールは別途策定後に展開します。</div>
+
+<h4>現時点でやること</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>対応</th></tr></thead>
+  <tbody>
+    <tr><td><code>focus-visible</code></td><td>キーボード操作時にフォーカスが視認できること。hover を実装したら focus も実装する</td></tr>
+    <tr><td>セマンティックな HTML</td><td>本ガイドの「1. HTML — 要素の使い分け」に沿っていれば、基本的なアクセシビリティは担保される</td></tr>
+    <tr><td><code>alt</code> 属性</td><td>本ガイド「2-1. alt 属性」のルールに従う</td></tr>
+    <tr><td>フォームの <code>label</code></td><td><code>input</code> / <code>select</code> / <code>textarea</code> には必ず対応する <code>label</code> を紐づける</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h4>現時点では「追って対応」とするもの</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>備考</th></tr></thead>
+  <tbody>
+    <tr><td><code>aria-*</code> 属性</td><td>モーダル・タブ・アコーディオン等のインタラクションに必要だが、ガイドライン策定後に導入する</td></tr>
+    <tr><td>ランドマークロール</td><td><code>role</code> 属性による明示的な指定。セマンティック HTML で暗黙的にカバーできる範囲はそのまま</td></tr>
+    <tr><td>スクリーンリーダーテスト</td><td>テスト手順・対象ブラウザを含めてガイドラインで定義予定</td></tr>
+    <tr><td>キーボードナビゲーション</td><td>Tab / Enter / Esc での操作フローの設計。コンポーネントごとのルールをガイドラインで定義予定</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="callout callout--important"><span class="callout-label">重要</span>「追って対応」は「やらなくていい」ではない。現時点で判断基準が未整備なだけなので、自分で aria 属性等を調べて書ける場合は積極的に取り入れてよい。ただし、独自判断で入れた場合はレビュー時にその旨を伝えること。</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 6. Git 運用                                  -->
+<!-- ═══════════════════════════════════════════ -->
+<h2 id="ch6"><span class="chapter-num">6</span>Git 運用（Issue・ブランチ・コミット・PR）</h2>
+
+<h3 id="s6-1">6-1. Issue（イシュー）</h3>
+<p>作業を始める前に <strong>必ず Issue を作成する</strong>。Issue がすべての起点になる。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>基準</th></tr></thead>
+  <tbody>
+    <tr><td>作成タイミング</td><td>コードを書き始める前に Issue を立てる。Issue なしで作業を始めない</td></tr>
+    <tr><td>タイトル</td><td>何をするかが一目でわかること（例：「TOPページ作成」「お問い合わせフォームのバリデーション実装」）</td></tr>
+    <tr><td>内容</td><td>やること・完了条件を書く。不明点があればその時点で書いておく</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="s6-2">6-2. ブランチ運用</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>基準</th></tr></thead>
+  <tbody>
+    <tr><td>ブランチ名</td><td><strong><code>feature/イシュー番号</code></strong> の形式にする（例：<code>feature/111</code>、<code>fix/205</code>）</td></tr>
+    <tr><td>作業ブランチの起点</td><td>最新の <code>develop</code>（または指定ブランチ）から切る</td></tr>
+    <tr><td>マージ前</td><td>push 前に最新の <code>develop</code> を取り込み、コンフリクトを解消する</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="s6-3">6-3. コミット</h3>
+<p>コミットは <strong>Issue の主題に対して、文脈ごとに分ける</strong>。</p>
+<p>1つの Issue の中でも「本題の実装」「FBへの対応」「たまたま気づいた修正」は別の文脈なので、コミットを分ける。</p>
+
+<h4>具体例：Issue #111「TOPページ作成」の場合</h4>
+<pre>feat: #111 TOPページのヒーローセクションを実装
+feat: #111 TOPページのお知らせカード一覧を実装
+feat: #111 TOPページのSPレスポンシブ対応
+fix: #111 FBを受けてヒーローセクションの余白を修正
+fix: #111 FBを受けてカード内のフォントサイズを調整
+fix: 共通ヘッダーのロゴリンクのalt修正（#111作業中に発見）</pre>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>基準</th></tr></thead>
+  <tbody>
+    <tr><td>コミット単位</td><td>Issue の主題に沿った文脈ごとに分ける。「本題」「FB対応」「偶然気づいた修正」は別コミット</td></tr>
+    <tr><td>コミットメッセージ</td><td><strong>何を・なぜ</strong> が伝わること。Issue 番号をメッセージに含める</td></tr>
+    <tr><td>メッセージ形式</td><td><code>feat:</code> / <code>fix:</code> / <code>style:</code> 等の prefix をつける</td></tr>
+    <tr><td>不要ファイル</td><td><code>.DS_Store</code>、<code>node_modules/</code>、IDE設定ファイル等をコミットしない</td></tr>
+    <tr><td>NG なメッセージ</td><td><code>fix</code>、<code>update</code>、<code>修正</code>、<code>対応</code> だけのメッセージ</td></tr>
+  </tbody>
+</table>
+</div>
+<p><strong>なぜ文脈で分けるのか</strong>：レビュー時に「本題の実装」と「FB対応」と「ついでの修正」が混ざっていると、何が意図的な変更で何が副次的な変更か判別できない。revert が必要になったときにも困る。</p>
+
+<h3 id="s6-4">6-4. PR（プルリクエスト）</h3>
+
+<h4>関連 Issue の紐付け</h4>
+<p>PRには <strong>必ず関連 Issue を紐付ける</strong>。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>状況</th><th>書き方</th></tr></thead>
+  <tbody>
+    <tr><td>PR をマージしたら Issue を閉じたい</td><td>PR本文に <code>closes #111</code> と書く</td></tr>
+    <tr><td>Issue に関連するが、まだ閉じない</td><td>PR本文に <code>relates to #111</code> と書く、または GitHub の関連 Issue 欄で紐付ける</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h4>PR 本文に書くこと</h4>
+<p>以下の項目を <strong>すべて</strong> 記載する。テンプレートとして使うこと。</p>
+<pre>## 概要
+<span class="comment">&lt;!-- このPRで何をしたか。1〜3行で端的に --&gt;</span>
+
+## 変更ファイル
+<span class="comment">&lt;!-- 変更した主要ファイルと、それぞれ何を変えたかの概要 --&gt;</span>
+- `src/pages/top.html` — TOPページの HTML を新規作成
+- `src/styles/pages/_top.scss` — TOPページ用のスタイルを追加
+- `src/scripts/slider.js` — ヒーロースライダーの動作を実装
+
+## 関連イシュー
+<span class="comment">&lt;!-- closes で閉じるか、relates to で紐付ける --&gt;</span>
+closes #111
+
+## スクリーンショット
+<span class="comment">&lt;!-- 見た目の変更がある場合は Before / After を貼る --&gt;</span>
+| Before | After |
+|--------|-------|
+| （画像） | （画像） |
+
+## 補足・悩んだ箇所
+<span class="comment">&lt;!-- 実装で迷った点、レビューで見てほしいポイント --&gt;</span>
+- カードの並びを grid で実装（SP→PCのカラム変更がシンプルなため）
+- ヒーロー画像の遅延読み込みは今回未対応（Issue #112 で対応予定）
+
+## 未対応
+<span class="comment">&lt;!-- このPRでは対応しないこと --&gt;</span>
+- アニメーション（デザイン確定待ち）
+- OGP画像の設定（素材待ち）</pre>
+
+<h4>PR 提出前の確認</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>基準</th></tr></thead>
+  <tbody>
+    <tr><td>diff の確認</td><td>自分で diff を見て、意図しない変更がないか確認してから出す</td></tr>
+    <tr><td>未対応の明記</td><td>やっていないことを「未対応」欄に書く。書かないとレビュアーが見落としか意図的か判断できない</td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 7. デザインカンプとの差異チェック                -->
+<!-- ═══════════════════════════════════════════ -->
+<h2 id="ch7"><span class="chapter-num">7</span>デザインカンプとの差異チェック</h2>
+<p class="section-lead"><strong>「ピクセルパーフェクト」が目的ではない。</strong><br>デザインの意図を汲み取って、仕様として正しく再現できているかを見る。</p>
+
+<h3 id="s7-1">7-1. 確認観点</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>観点</th><th>確認方法</th><th>基準</th></tr></thead>
+  <tbody>
+    <tr><td>フォントファミリー</td><td>DevTools で適用されているフォントを確認</td><td>カンプ指定のフォントが当たっていること</td></tr>
+    <tr><td>フォントサイズ</td><td>DevTools で実測</td><td>カンプ指定値を <code>px</code> で設定（±1px 以内）。<strong>今後 <code>rem</code> に統一予定</strong></td></tr>
+    <tr><td>フォントウェイト</td><td>DevTools で確認</td><td>カンプ指定値と一致していること</td></tr>
+    <tr><td><code>line-height</code></td><td>DevTools で確認</td><td><strong><code>1.2</code> を基本とする</strong>（別途指定がある場合はそちらに従う）</td></tr>
+    <tr><td><code>letter-spacing</code></td><td>DevTools で確認</td><td><strong>単位は <code>em</code> を使う</strong>。カンプの値を em に換算して設定する</td></tr>
+    <tr><td>カラー</td><td>テキスト色・背景色・ボーダー色</td><td>カンプ通りの値を使う。「近い色」で済ませない</td></tr>
+    <tr><td>余白</td><td>margin / padding がカンプの指定値と合っているか</td><td>±2px。デザイントークンがあればそちらに合わせる</td></tr>
+    <tr><td>アイコン・画像</td><td>サイズ・位置・アスペクト比</td><td>崩れていないこと</td></tr>
+    <tr><td>インタラクション</td><td>hover / active / focus / disabled</td><td>定義があれば実装。なければ確認を取る（自己判断で省略しない）</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><code>letter-spacing</code> の換算例：</p>
+<pre><span class="comment">カンプの指定値が 50（1/1000 em 単位の場合）:</span>
+letter-spacing: 0.05em;
+
+<span class="comment">カンプの指定値が 100:</span>
+letter-spacing: 0.1em;</pre>
+
+<h3 id="s7-2">7-2. 確認手順</h3>
+<ol>
+  <li><strong>DevTools</strong> でフォントサイズ・余白・色を実測する</li>
+  <li><strong>PerfectPixel</strong>（Chrome 拡張機能）でカンプとブラウザ表示を重ねて差異を確認する</li>
+  <li><strong>Chrome と Safari</strong> の両方で表示を確認する</li>
+  <li><strong>スマホ実機で確認</strong>（シミュレータだけで済ませない）</li>
+</ol>
+
+<h3 id="s7-3">7-3. カンプに情報がないときの対応</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>状況</th><th>対応</th></tr></thead>
+  <tbody>
+    <tr><td>SP のデザインがない</td><td>自己判断で実装せず確認する</td></tr>
+    <tr><td>hover 等の定義がない</td><td>同上。「ないから実装しない」は NG</td></tr>
+    <tr><td>中間ブレークポイントの指定がない</td><td>基本的には 768px または 1024px で対応する</td></tr>
+    <tr><td>テキスト量がカンプと異なる</td><td>長文・短文の両方で崩れないか自分で確認する</td></tr>
+  </tbody>
+</table>
+</div>
+
+<footer class="doc-footer">
+  <p>最終更新: 2026/03/30<br>このガイドはプロジェクトや組織の成長に合わせて更新します。気づいた点があれば随時共有してください。</p>
+</footer>
+
+</main>
+</body>
+</html>
