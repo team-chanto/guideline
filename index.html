@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>コードレビュー（FB）基準ガイド</title>
+<title>コードレビュー（FB）基準ガイド｜社内コーディング規約</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -380,6 +380,7 @@
     <a href="#s7-1">7-1. 確認観点</a>
     <a href="#s7-2">7-2. 確認手順</a>
     <a href="#s7-3">7-3. 情報がないとき</a>
+    <a href="#changelog" class="is-chapter">更新履歴</a>
   </nav>
 </aside>
 
@@ -387,14 +388,19 @@
 <main class="main">
 
 <header class="doc-header">
-  <h1>コーディングガイドライン</h1>
+  <h1>コードレビュー（FB）基準ガイド</h1>
+  <div class="doc-meta">
+    <div class="doc-meta-item"><strong>対象</strong> 社内エンジニア</div>
+    <div class="doc-meta-item"><strong>目的</strong> コードレビュー時のFB観点と、コーディング規約を統一する</div>
+    <div class="doc-meta-item"><strong>前提</strong> このガイドに書かれていることが社内の標準ルールです。<br>プロジェクト固有の事情で逸脱する場合は、PRやIssueにその旨を明記すること。</div>
+  </div>
 </header>
 
 <!-- ═══════════════════════════════════════════ -->
 <!-- 1. HTML — 要素の使い分け                     -->
 <!-- ═══════════════════════════════════════════ -->
 <h2 id="ch1"><span class="chapter-num">1</span>HTML — 要素の使い分け</h2>
-<p class="section-lead">見た目ではなく<strong>「その要素が何を意味するか」</strong>で選ぶ。<br>以下の要素を「いつ使うか・使わないか」を判断できることがゴール。</p>
+<p class="section-lead">見た目ではなく<strong>「その要素が何を意味するか」</strong>で選ぶ。<br>以下の要素の使い分けが社内の基準となる。</p>
 
 <h3 id="s1-1">1-1. ページ構造を作る要素</h3>
 <div class="table-wrap">
@@ -790,6 +796,8 @@ import styles from './Card.module.css';
 
 <h3 id="s3-4">3-4. hover の実装：<code>any-hover</code> を使う</h3>
 <p>hover スタイルは <strong><code>@media (any-hover: hover)</code></strong> で囲む。タッチデバイスで hover が残り続ける問題を防ぐため。</p>
+
+<h4>SCSS / 素の CSS の場合</h4>
 <pre><span class="ok-label">/* ✅ OK */</span>
 @media (any-hover: hover) {
   .button:hover {
@@ -801,7 +809,42 @@ import styles from './Card.module.css';
 .button:hover {
   opacity: 0.7;
 }</pre>
-<p><strong>Tailwind の場合</strong>も同様に、カスタムバリアント or CSS 側で制御する。</p>
+
+<h4>Tailwind v4 の場合</h4>
+<p><code>global.css</code> に <code>@custom-variant</code> でカスタムバリアントを定義する。</p>
+<pre><span class="comment">/* global.css */</span>
+@import "tailwindcss";
+
+@custom-variant hover-device (@media (any-hover: hover));</pre>
+<pre><span class="ok-label">&lt;!-- ✅ OK — hover-device バリアントを使う --&gt;</span>
+&lt;button class="hover-device:hover:opacity-70"&gt;ボタン&lt;/button&gt;
+
+<span class="ng-label">&lt;!-- ❌ NG — デフォルトの hover をそのまま使う --&gt;</span>
+&lt;button class="hover:opacity-70"&gt;ボタン&lt;/button&gt;</pre>
+
+<h4>Tailwind v3 の場合</h4>
+<p><code>tailwind.config.js</code> で <code>future.hoverOnlyWhenSupported</code> を <code>true</code> にする。これにより、すべての <code>hover:</code> ユーティリティが自動的に <code>@media (hover: hover)</code> で囲まれるようになる。</p>
+<pre><span class="comment">// tailwind.config.js</span>
+module.exports = {
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
+}</pre>
+<pre><span class="ok-label">&lt;!-- ✅ OK — hoverOnlyWhenSupported: true なら、通常の hover: がそのまま安全に使える --&gt;</span>
+&lt;button class="hover:opacity-70"&gt;ボタン&lt;/button&gt;</pre>
+<p>設定を有効にするだけで既存の <code>hover:</code> がすべて対応されるため、カスタムバリアントの追加は不要。</p>
+
+<h4>まとめ</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>環境</th><th>設定場所</th><th>使い方</th></tr></thead>
+  <tbody>
+    <tr><td>SCSS / 素の CSS</td><td>不要（直接メディアクエリを書く）</td><td><code>@media (any-hover: hover) { .el:hover { ... } }</code></td></tr>
+    <tr><td>Tailwind v4</td><td><code>global.css</code> に <code>@custom-variant</code></td><td><code>hover-device:hover:opacity-70</code></td></tr>
+    <tr><td>Tailwind v3</td><td><code>tailwind.config.js</code> に <code>hoverOnlyWhenSupported: true</code></td><td>通常の <code>hover:opacity-70</code> がそのまま使える</td></tr>
+  </tbody>
+</table>
+</div>
 
 <h3 id="s3-5">3-5. Tailwind CSS（v4 基準）</h3>
 <p>Tailwind v4 では <code>tailwind.config.js</code> ではなく <strong><code>global.css</code>（CSS ファイル）でテーマを定義</strong> する。</p>
@@ -1221,9 +1264,27 @@ letter-spacing: 0.1em;</pre>
 </table>
 </div>
 
-<footer class="doc-footer">
-  <p>最終更新: 2026/03/30<br>このガイドはプロジェクトや組織の成長に合わせて更新します。気づいた点があれば随時共有してください。</p>
-</footer>
+<hr>
+
+<h2 id="changelog"><span class="chapter-num">履歴</span>更新履歴</h2>
+<p class="section-lead">新しい更新が上に来る。改善提案があれば随時共有すること。</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th style="white-space:nowrap">日付</th><th style="white-space:nowrap">バージョン</th><th>変更内容</th><th style="white-space:nowrap">更新者</th></tr></thead>
+  <tbody>
+    <!-- ▼ 新しい更新はここに追加 ▼ -->
+    <tr><td>2026/03/31</td><td>v1.0.0</td><td>初版作成。HTML / CSS / JavaScript / アクセシビリティ / Git運用 / デザインカンプの各基準を策定</td><td>亀井</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout callout--info">
+<span class="callout-label">更新ルール</span>
+<strong>バージョニング</strong>：メジャー（v2.0.0）= 構成の大幅変更・章の追加削除、マイナー（v1.1.0）= ルールの追加・変更、パッチ（v1.0.1）= 誤字修正・表現の微修正。<br>
+<strong>変更内容</strong>：「何を・なぜ」変えたかを端的に書く。<br>
+<strong>更新者</strong>：名前または GitHub アカウント名。
+</div>
 
 </main>
 </body>
