@@ -562,10 +562,12 @@
     <tr><td><strong>ケバブケース</strong>（小文字 + ハイフン区切り）</td><td><code>hero-main.webp</code></td><td><code>heroMain.webp</code>、<code>Hero_Main.webp</code></td></tr>
     <tr><td><strong>内容が伝わる名前</strong>をつける</td><td><code>about-team-photo.webp</code></td><td><code>img01.webp</code>、<code>photo.webp</code>、<code>test.jpg</code></td></tr>
     <tr><td><strong>デバイス・サイズの接尾辞</strong>をつける</td><td><code>hero-main-sp.webp</code>、<code>hero-main-pc.webp</code></td><td><code>hero-main-2.webp</code></td></tr>
-    <tr><td><strong>連番は意味と併用</strong>する</td><td><code>news-thumb-01.webp</code></td><td><code>01.webp</code>、<code>02.webp</code></td></tr>
+    <tr><td><strong>連番は意味と併用</strong>する。ゼロ埋めしない</td><td><code>news-thumb-1.webp</code></td><td><code>01.webp</code>、<code>02.webp</code></td></tr>
   </tbody>
 </table>
 </div>
+
+<p>ゼロ埋め（<code>01</code>、<code>02</code>）ではなく <code>1</code>、<code>2</code> とする。ゼロ埋めは桁数を固定してしまうため、数が増えたときに <code>001</code> に振り直す手間が発生する。</p>
 
 <p>ディレクトリ構成の例：</p>
 <div class="dir-tree">
@@ -576,7 +578,7 @@
 &nbsp;&nbsp;<span class="folder">top/</span> <span class="note">← ページ単位で分ける</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;hero-main-pc.webp<br>
 &nbsp;&nbsp;&nbsp;&nbsp;hero-main-sp.webp<br>
-&nbsp;&nbsp;&nbsp;&nbsp;news-thumb-01.webp<br>
+&nbsp;&nbsp;&nbsp;&nbsp;news-thumb-1.webp<br>
 &nbsp;&nbsp;<span class="folder">about/</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;about-team-photo.webp
 </div>
@@ -586,25 +588,29 @@
 <table>
   <thead><tr><th>用途</th><th>可否</th><th>理由</th></tr></thead>
   <tbody>
-    <tr><td>アンカーリンクの遷移先</td><td class="ng">使わない</td><td>—</td></tr>
-    <tr><td>CSS のスタイル指定</td><td class="ng">使わない</td><td>詳細度が高く再利用できない。class を使う</td></tr>
-    <tr><td>計測タグ（GA イベント等）</td><td class="ng">先方指定がない限り使わない</td><td><code>data-*</code> 属性で対応。id は一意制約があり管理が煩雑</td></tr>
+    <tr><td>アンカーリンクの遷移先</td><td class="ok">OK</td><td>ページ内リンクの遷移先として id を使うのは正当な用途</td></tr>
     <tr><td><code>label</code> の <code>for</code> 属性</td><td class="ok">OK</td><td>フォーム要素との紐付けは id が必要</td></tr>
+    <tr><td>CSS のスタイル指定</td><td class="ng">使わない</td><td>詳細度が高く再利用できない。class を使う</td></tr>
+    <tr><td>DOM 操作のフック（JS）</td><td class="ng">使わない</td><td><code>data-*</code> 属性 + <code>querySelector</code> で取得する（4章参照）</td></tr>
+    <tr><td>アニメーションのフック</td><td class="ng">使わない</td><td>トリガーや対象要素の指定には <code>data-*</code> 属性を使う</td></tr>
+    <tr><td>計測タグ（GA イベント等）</td><td class="ng">先方指定がない限り使わない</td><td><code>data-*</code> 属性で対応。id は一意制約があり管理が煩雑</td></tr>
   </tbody>
 </table>
 </div>
 
-<pre><span class="ng-label">&lt;!-- ❌ NG — アンカーリンクや計測に id を使う --&gt;</span>
+<pre><span class="ok-label">&lt;!-- ✅ OK — アンカーリンクの遷移先は id --&gt;</span>
 &lt;section id="about"&gt;...&lt;/section&gt;
-&lt;button id="cta-button"&gt;お問い合わせ&lt;/button&gt;
-
-<span class="ok-label">&lt;!-- ✅ OK — data 属性で管理 --&gt;</span>
-&lt;section data-section="about"&gt;...&lt;/section&gt;
-&lt;button data-gtm="cta-button"&gt;お問い合わせ&lt;/button&gt;
+&lt;a href="#about"&gt;会社概要へ&lt;/a&gt;
 
 <span class="ok-label">&lt;!-- ✅ OK — フォームの紐付けは id --&gt;</span>
 &lt;label for="email"&gt;メールアドレス&lt;/label&gt;
-&lt;input id="email" type="email"&gt;</pre>
+&lt;input id="email" type="email"&gt;
+
+<span class="ng-label">&lt;!-- ❌ NG — 計測タグに id を使う（先方指定がない場合） --&gt;</span>
+&lt;button id="cta-button"&gt;お問い合わせ&lt;/button&gt;
+
+<span class="ok-label">&lt;!-- ✅ OK — 計測タグは data 属性で管理 --&gt;</span>
+&lt;button data-gtm="cta-button"&gt;お問い合わせ&lt;/button&gt;</pre>
 
 <h3 id="s1-6">1-6. 避けるべきパターンまとめ</h3>
 <div class="table-wrap">
@@ -860,18 +866,20 @@ module.exports = {
 <p>プロジェクトでは <code>line-height: 1.2</code> を基本としているため、デフォルトの <code>line-height</code> が邪魔になる。フォントサイズは <code>global.css</code> の <code>@theme</code> で独自に定義して使う。</p>
 
 <h4>変数の定義</h4>
+<p>変数名には <strong>px 値をそのまま入れる</strong>。<code>xs</code> / <code>sm</code> / <code>lg</code> のような抽象名は使わない。カンプの指定値と変数名が一致するため、迷わずに済む。</p>
 <pre><span class="comment">/* global.css */</span>
 @import "tailwindcss";
 
 @theme {
-  <span class="comment">/* フォントサイズ — line-height を含まない純粋なサイズだけ定義 */</span>
-  --font-size-xs: 0.75rem;     <span class="comment">/* 12px */</span>
-  --font-size-sm: 0.875rem;    <span class="comment">/* 14px */</span>
-  --font-size-base: 1rem;      <span class="comment">/* 16px */</span>
-  --font-size-lg: 1.125rem;    <span class="comment">/* 18px */</span>
-  --font-size-xl: 1.25rem;     <span class="comment">/* 20px */</span>
-  --font-size-2xl: 1.5rem;     <span class="comment">/* 24px */</span>
-  --font-size-3xl: 1.875rem;   <span class="comment">/* 30px */</span>
+  <span class="comment">/* フォントサイズ — px値を変数名にする。line-height は含めない */</span>
+  --font-size-10: 0.625rem;    <span class="comment">/* 10px */</span>
+  --font-size-12: 0.75rem;     <span class="comment">/* 12px */</span>
+  --font-size-14: 0.875rem;    <span class="comment">/* 14px */</span>
+  --font-size-16: 1rem;        <span class="comment">/* 16px */</span>
+  --font-size-18: 1.125rem;    <span class="comment">/* 18px */</span>
+  --font-size-20: 1.25rem;     <span class="comment">/* 20px */</span>
+  --font-size-24: 1.5rem;      <span class="comment">/* 24px */</span>
+  --font-size-30: 1.875rem;    <span class="comment">/* 30px */</span>
 
   <span class="comment">/* カラー */</span>
   --color-brand: #1a2b3c;
@@ -881,13 +889,16 @@ module.exports = {
   --spacing-18: 4.5rem;
 }</pre>
 
-<pre><span class="ng-label">&lt;!-- ❌ NG — 任意値の多用 --&gt;</span>
-&lt;div class="text-[#1a2b3c] mt-[72px] p-[18px]"&gt;...&lt;/div&gt;
+<pre><span class="ng-label">&lt;!-- ❌ NG — デフォルトの text-sm（line-height が勝手につく） --&gt;</span>
+&lt;p class="text-sm"&gt;テキスト&lt;/p&gt;
 
-<span class="ok-label">&lt;!-- ✅ OK — @theme で定義した変数を使う --&gt;</span>
-&lt;div class="text-brand mt-18 p-18"&gt;...&lt;/div&gt;</pre>
+<span class="ok-label">&lt;!-- ✅ OK — カンプで14pxと指定されていたら text-14 --&gt;</span>
+&lt;p class="text-14"&gt;テキスト&lt;/p&gt;
 
-<div class="callout callout--info"><span class="callout-label">注意</span><code>@theme</code> で <code>--font-size-sm</code> 等を再定義すると、Tailwind のデフォルト値が上書きされる。チーム全員がこの前提を共有していること。</div>
+<span class="ok-label">&lt;!-- ✅ OK — カンプで24pxと指定されていたら text-24 --&gt;</span>
+&lt;h2 class="text-24"&gt;見出し&lt;/h2&gt;</pre>
+
+<p>プロジェクトで使うサイズが増えた場合は、<code>@theme</code> に <code>--font-size-28: 1.75rem;</code> のように追加する。</p>
 
 <h4>任意値（<code>[]</code>）のルール</h4>
 <div class="table-wrap">
