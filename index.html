@@ -1,346 +1,289 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>コードレビュー（FB）基準ガイド｜社内コーディング規約</title>
+<title>サイト制作ガイドライン｜社内コーディング規約</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --c-bg: #fafaf9;
+  :root, [data-theme="light"] {
+    --c-bg: #f8f7f4;
     --c-surface: #ffffff;
-    --c-text: #1c1917;
-    --c-text-sub: #57534e;
-    --c-text-muted: #a8a29e;
-    --c-border: #e7e5e4;
-    --c-border-strong: #d6d3d1;
+    --c-text: #1a1816;
+    --c-text-sub: #5c5650;
+    --c-text-muted: #a09890;
+    --c-border: #e8e4df;
+    --c-border-strong: #d4cfc8;
     --c-accent: #2563eb;
     --c-accent-light: #eff6ff;
     --c-ok: #16a34a;
     --c-ok-bg: #f0fdf4;
-    --c-ok-border: #bbf7d0;
     --c-ng: #dc2626;
     --c-ng-bg: #fef2f2;
-    --c-ng-border: #fecaca;
     --c-warn: #d97706;
     --c-warn-bg: #fffbeb;
-    --c-warn-border: #fde68a;
     --c-code-bg: #1e1e2e;
     --c-code-text: #cdd6f4;
     --c-code-comment: #6c7086;
-    --c-code-keyword: #cba6f7;
-    --c-code-string: #a6e3a1;
-    --c-code-tag: #89b4fa;
-    --c-sidebar-w: 260px;
-    --c-content-max: 820px;
+    --c-sidebar-bg: #ffffff;
+    --c-topbar-bg: rgba(248,247,244,0.85);
+    --c-sidebar-w: 272px;
+    --c-topbar-h: 56px;
     --font-sans: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono: 'JetBrains Mono', 'Menlo', monospace;
   }
-
+  [data-theme="dark"] {
+    --c-bg: #141210;
+    --c-surface: #1e1c18;
+    --c-text: #e8e4df;
+    --c-text-sub: #a09890;
+    --c-text-muted: #6c6560;
+    --c-border: #2e2a24;
+    --c-border-strong: #3e3830;
+    --c-accent: #60a5fa;
+    --c-accent-light: #172554;
+    --c-ok: #4ade80;
+    --c-ok-bg: #052e16;
+    --c-ng: #f87171;
+    --c-ng-bg: #450a0a;
+    --c-warn: #fbbf24;
+    --c-warn-bg: #422006;
+    --c-code-bg: #0d0d14;
+    --c-code-text: #cdd6f4;
+    --c-code-comment: #585870;
+    --c-sidebar-bg: #1a1816;
+    --c-topbar-bg: rgba(20,18,16,0.85);
+  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html { font-size: 15px; scroll-behavior: smooth; scroll-padding-top: 2rem; }
-
+  html { font-size: 15px; scroll-behavior: smooth; scroll-padding-top: calc(var(--c-topbar-h) + 1.5rem); }
   body {
     font-family: var(--font-sans);
     color: var(--c-text);
     background: var(--c-bg);
     line-height: 1.8;
     -webkit-font-smoothing: antialiased;
+    transition: background 0.3s, color 0.3s;
   }
-
+  /* ── Top Bar ── */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--c-topbar-h);
+    background: var(--c-topbar-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--c-border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1.5rem;
+    z-index: 200;
+    transition: background 0.3s;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 0.75rem; }
+  .topbar-title {
+    font-size: 0.85rem; font-weight: 700; color: var(--c-text);
+    letter-spacing: 0.02em;
+  }
+  .topbar-version {
+    font-size: 0.65rem; font-weight: 500;
+    background: var(--c-accent-light); color: var(--c-accent);
+    padding: 0.15em 0.5em; border-radius: 4px;
+  }
+  .topbar-actions { display: flex; align-items: center; gap: 0.5rem; }
+  .btn-icon {
+    width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--c-border);
+    background: var(--c-surface); color: var(--c-text); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; transition: all 0.15s;
+  }
+  .btn-icon:hover { border-color: var(--c-accent); color: var(--c-accent); }
+  .btn-menu { display: none; }
   /* ── Sidebar ── */
   .sidebar {
     position: fixed;
-    top: 0; left: 0;
+    top: var(--c-topbar-h); left: 0;
     width: var(--c-sidebar-w);
-    height: 100vh;
-    background: var(--c-surface);
+    height: calc(100vh - var(--c-topbar-h));
+    background: var(--c-sidebar-bg);
     border-right: 1px solid var(--c-border);
-    overflow-y: auto;
-    padding: 2rem 0;
+    overflow-y: auto; overflow-x: hidden;
+    padding: 1.5rem 0;
     z-index: 100;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), background 0.3s;
   }
   .sidebar-title {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
     color: var(--c-text-muted);
-    padding: 0 1.25rem;
-    margin-bottom: 1rem;
+    padding: 0 1.25rem; margin-bottom: 0.75rem;
   }
   .sidebar nav a {
     display: block;
-    padding: 0.35rem 1.25rem;
-    font-size: 0.8rem;
-    color: var(--c-text-sub);
-    text-decoration: none;
-    line-height: 1.5;
+    padding: 0.3rem 1.25rem 0.3rem 1.5rem;
+    font-size: 0.78rem; color: var(--c-text-sub);
+    text-decoration: none; line-height: 1.5;
     border-left: 3px solid transparent;
     transition: all 0.15s;
   }
-  .sidebar nav a:hover {
-    color: var(--c-accent);
-    background: var(--c-accent-light);
-    border-left-color: var(--c-accent);
-  }
+  .sidebar nav a:hover { color: var(--c-accent); background: var(--c-accent-light); }
   .sidebar nav a.is-chapter {
-    font-weight: 700;
-    color: var(--c-text);
-    margin-top: 0.75rem;
-    font-size: 0.82rem;
+    font-weight: 700; color: var(--c-text);
+    margin-top: 0.75rem; font-size: 0.8rem;
+    padding-left: 1.25rem;
   }
-
+  .sidebar nav a.is-active {
+    color: var(--c-accent); border-left-color: var(--c-accent);
+    background: var(--c-accent-light); font-weight: 500;
+  }
   /* ── Main ── */
   .main {
     margin-left: var(--c-sidebar-w);
-    padding: 3rem 3rem 6rem;
-    max-width: calc(var(--c-content-max) + 6rem);
+    padding: calc(var(--c-topbar-h) + 2rem) 3rem 6rem;
+    max-width: calc(820px + var(--c-sidebar-w) + 6rem);
   }
-
   /* ── Header ── */
-  .doc-header {
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 2px solid var(--c-text);
-  }
+  .doc-header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 2px solid var(--c-text); }
   .doc-header h1 {
-    font-size: 2rem;
-    font-weight: 900;
-    letter-spacing: -0.02em;
-    line-height: 1.3;
-    margin-bottom: 1.25rem;
+    font-size: 2rem; font-weight: 900;
+    letter-spacing: -0.02em; line-height: 1.3; margin-bottom: 1.25rem;
   }
-  .doc-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-  .doc-meta-item {
-    font-size: 0.85rem;
-    color: var(--c-text-sub);
-  }
-  .doc-meta-item strong {
-    display: inline-block;
-    min-width: 4em;
-    color: var(--c-text);
-    font-weight: 700;
-  }
-
+  .doc-meta { display: flex; flex-direction: column; gap: 0.35rem; }
+  .doc-meta-item { font-size: 0.85rem; color: var(--c-text-sub); }
+  .doc-meta-item strong { display: inline-block; min-width: 4em; color: var(--c-text); font-weight: 700; }
   /* ── Headings ── */
   h2 {
-    font-size: 1.5rem;
-    font-weight: 900;
-    letter-spacing: -0.01em;
-    line-height: 1.3;
-    margin-top: 4rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--c-border-strong);
-    position: relative;
+    font-size: 1.5rem; font-weight: 900; letter-spacing: -0.01em; line-height: 1.3;
+    margin-top: 4rem; margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem; border-bottom: 2px solid var(--c-border-strong);
   }
   h2 .chapter-num {
-    display: inline-block;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--c-accent);
-    background: var(--c-accent-light);
-    padding: 0.15em 0.5em;
-    border-radius: 4px;
-    margin-right: 0.5em;
-    vertical-align: middle;
-    letter-spacing: 0.05em;
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    color: var(--c-accent); background: var(--c-accent-light);
+    padding: 0.15em 0.5em; border-radius: 4px;
+    margin-right: 0.5em; vertical-align: middle; letter-spacing: 0.05em;
   }
-  h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-top: 2.5rem;
-    margin-bottom: 1rem;
-    color: var(--c-text);
-  }
-  h4 {
-    font-size: 0.95rem;
-    font-weight: 700;
-    margin-top: 2rem;
-    margin-bottom: 0.75rem;
-    color: var(--c-text);
-  }
-
+  h3 { font-size: 1.1rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; }
+  h4 { font-size: 0.95rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; }
   /* ── Prose ── */
   p { margin-bottom: 1rem; }
   strong { font-weight: 700; }
-  .section-lead {
-    font-size: 0.95rem;
-    color: var(--c-text-sub);
-    margin-bottom: 1.5rem;
-  }
-
-  /* ── Callout boxes ── */
+  .section-lead { font-size: 0.95rem; color: var(--c-text-sub); margin-bottom: 1.5rem; }
+  /* ── Callout ── */
   .callout {
-    padding: 1rem 1.25rem;
-    border-radius: 6px;
-    margin-bottom: 1.5rem;
-    font-size: 0.88rem;
-    line-height: 1.7;
-    border-left: 4px solid;
+    padding: 1rem 1.25rem; border-radius: 6px; margin-bottom: 1.5rem;
+    font-size: 0.88rem; line-height: 1.7; border-left: 4px solid;
   }
-  .callout--important {
-    background: var(--c-warn-bg);
-    border-color: var(--c-warn);
-  }
-  .callout--info {
-    background: var(--c-accent-light);
-    border-color: var(--c-accent);
-  }
-  .callout--future {
-    background: #f5f3ff;
-    border-color: #8b5cf6;
-  }
-  .callout-label {
-    font-weight: 700;
-    display: block;
-    margin-bottom: 0.25rem;
-  }
-
+  .callout--important { background: var(--c-warn-bg); border-color: var(--c-warn); }
+  .callout--info { background: var(--c-accent-light); border-color: var(--c-accent); }
+  .callout--future { background: var(--c-accent-light); border-color: #8b5cf6; }
+  .callout-label { font-weight: 700; display: block; margin-bottom: 0.25rem; }
   /* ── Tables ── */
-  .table-wrap {
-    overflow-x: auto;
-    margin-bottom: 1.5rem;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-    line-height: 1.65;
-  }
+  .table-wrap { overflow-x: auto; margin-bottom: 1.5rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; line-height: 1.65; }
   thead th {
-    background: #f5f5f4;
-    font-weight: 700;
-    text-align: left;
-    padding: 0.6rem 0.85rem;
-    border-bottom: 2px solid var(--c-border-strong);
-    white-space: nowrap;
-    font-size: 0.8rem;
-    letter-spacing: 0.02em;
+    background: var(--c-surface); font-weight: 700; text-align: left;
+    padding: 0.6rem 0.85rem; border-bottom: 2px solid var(--c-border-strong);
+    white-space: nowrap; font-size: 0.8rem; letter-spacing: 0.02em;
+    position: sticky; top: 0;
   }
-  tbody td {
-    padding: 0.6rem 0.85rem;
-    border-bottom: 1px solid var(--c-border);
-    vertical-align: top;
-  }
-  tbody tr:hover { background: #fafaf9; }
+  tbody td { padding: 0.6rem 0.85rem; border-bottom: 1px solid var(--c-border); vertical-align: top; }
+  tbody tr:hover { background: var(--c-accent-light); }
   td code, th code {
-    font-family: var(--font-mono);
-    font-size: 0.82em;
-    background: #f0efed;
-    padding: 0.15em 0.35em;
-    border-radius: 3px;
-    color: var(--c-text);
+    font-family: var(--font-mono); font-size: 0.82em;
+    background: var(--c-border); padding: 0.15em 0.35em; border-radius: 3px; color: var(--c-text);
   }
-
-  /* ── Code blocks ── */
+  /* ── Code ── */
   pre {
-    background: var(--c-code-bg);
-    color: var(--c-code-text);
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    line-height: 1.7;
-    padding: 1.25rem 1.5rem;
-    border-radius: 8px;
-    overflow-x: auto;
-    margin-bottom: 1.5rem;
-    position: relative;
+    background: var(--c-code-bg); color: var(--c-code-text);
+    font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.7;
+    padding: 1.25rem 1.5rem; border-radius: 8px;
+    overflow-x: auto; margin-bottom: 1.5rem;
   }
   pre .comment { color: var(--c-code-comment); }
-  pre .ok-label {
-    color: var(--c-ok);
-    font-weight: 500;
-  }
-  pre .ng-label {
-    color: var(--c-ng);
-    font-weight: 500;
-  }
-
-  /* Inline code */
+  pre .ok-label { color: var(--c-ok); font-weight: 500; }
+  pre .ng-label { color: var(--c-ng); font-weight: 500; }
   p code, li code, .callout code {
-    font-family: var(--font-mono);
-    font-size: 0.85em;
-    background: #f0efed;
-    padding: 0.12em 0.35em;
-    border-radius: 3px;
-    color: var(--c-text);
+    font-family: var(--font-mono); font-size: 0.85em;
+    background: var(--c-border); padding: 0.12em 0.35em; border-radius: 3px; color: var(--c-text);
   }
-
-  /* ── OK / NG indicators in tables ── */
   .ok { color: var(--c-ok); font-weight: 700; }
   .ng { color: var(--c-ng); font-weight: 700; }
-
   /* ── Lists ── */
-  ul, ol {
-    margin-bottom: 1rem;
-    padding-left: 1.5rem;
-  }
+  ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; }
   li { margin-bottom: 0.35rem; }
-  li + li { margin-top: 0.2rem; }
-
-  /* ── Judgment box ── */
+  /* ── Judgment ── */
   .judgment {
-    background: var(--c-accent-light);
-    border: 1px solid #bfdbfe;
-    border-radius: 6px;
-    padding: 0.85rem 1.25rem;
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-    font-weight: 500;
+    background: var(--c-accent-light); border: 1px solid var(--c-border);
+    border-radius: 6px; padding: 0.85rem 1.25rem;
+    font-size: 0.9rem; margin-bottom: 1.5rem; font-weight: 500;
   }
-
-  /* ── Directory tree ── */
+  /* ── Dir tree ── */
   .dir-tree {
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    line-height: 1.8;
-    background: #f5f5f4;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
+    font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.8;
+    background: var(--c-surface); border: 1px solid var(--c-border);
+    padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;
     color: var(--c-text-sub);
   }
   .dir-tree .folder { color: var(--c-accent); font-weight: 500; }
   .dir-tree .note { color: var(--c-text-muted); }
-
-  /* ── Divider ── */
-  hr {
-    border: none;
-    border-top: 1px solid var(--c-border);
-    margin: 3rem 0;
+  hr { border: none; border-top: 1px solid var(--c-border); margin: 3rem 0; }
+  .doc-footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--c-border); font-size: 0.8rem; color: var(--c-text-muted); }
+  /* ── Scroll progress ── */
+  .progress-bar {
+    position: fixed; top: var(--c-topbar-h); left: 0; right: 0;
+    height: 2px; background: transparent; z-index: 201;
   }
-
-  /* ── Footer ── */
-  .doc-footer {
-    margin-top: 4rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--c-border);
-    font-size: 0.8rem;
-    color: var(--c-text-muted);
+  .progress-bar-fill {
+    height: 100%; width: 0%; background: var(--c-accent);
+    transition: width 0.1s linear;
   }
-
+  /* ── Animations ── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .main > * {
+    animation: fadeInUp 0.4s ease-out both;
+  }
   /* ── Responsive ── */
-  @media (max-width: 900px) {
-    .sidebar { display: none; }
-    .main { margin-left: 0; padding: 2rem 1.25rem 4rem; }
+  @media (max-width: 960px) {
+    .sidebar {
+      transform: translateX(-100%);
+      width: 280px;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+    }
+    .sidebar.is-open { transform: translateX(0); }
+    .main { margin-left: 0; padding: calc(var(--c-topbar-h) + 1.5rem) 1.25rem 4rem; }
+    .btn-menu { display: flex; }
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      z-index: 99; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .overlay.is-visible { opacity: 1; pointer-events: auto; }
   }
-
   @media print {
-    .sidebar { display: none; }
-    .main { margin-left: 0; max-width: 100%; }
+    .sidebar, .topbar, .progress-bar { display: none; }
+    .main { margin-left: 0; max-width: 100%; padding-top: 1rem; }
     pre { white-space: pre-wrap; }
   }
 </style>
 </head>
 <body>
+
+<!-- ── Top Bar ── -->
+<div class="topbar">
+  <div class="topbar-left">
+    <button class="btn-icon btn-menu" aria-label="メニューを開く" onclick="toggleMenu()">☰</button>
+    <span class="topbar-title">サイト制作ガイドライン</span>
+    <span class="topbar-version">v1.0.0</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn-icon" aria-label="テーマ切替" onclick="toggleTheme()" id="theme-toggle">🌙</button>
+  </div>
+</div>
+<div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
 <!-- ════════════════ Sidebar ════════════════ -->
 <aside class="sidebar">
@@ -357,13 +300,12 @@
     <a href="#s2-1">2-1. alt 属性</a>
     <a href="#s2-2">2-2. メタ情報</a>
     <a href="#ch3" class="is-chapter">3. CSS</a>
-    <a href="#s3-1">3-1. BEM</a>
+    <a href="#s3-1">3-1. クラス命名規則</a>
     <a href="#s3-2">3-2. SCSS</a>
     <a href="#s3-3">3-3. 論理プロパティ</a>
     <a href="#s3-4">3-4. hover</a>
-    <a href="#s3-5">3-5. Tailwind CSS</a>
-    <a href="#s3-6">3-6. レスポンシブ</a>
-    <a href="#s3-7">3-7. よくある指摘</a>
+    <a href="#s3-5">3-5. レスポンシブ</a>
+    <a href="#s3-6">3-6. よくある指摘</a>
     <a href="#ch4" class="is-chapter">4. JavaScript</a>
     <a href="#s4-1">4-1. DOM 取得</a>
     <a href="#s4-2">4-2. data 属性の命名</a>
@@ -371,15 +313,10 @@
     <a href="#s4-4">4-4. 関数化</a>
     <a href="#s4-5">4-5. エラーハンドリング</a>
     <a href="#ch5" class="is-chapter">5. アクセシビリティ</a>
-    <a href="#ch6" class="is-chapter">6. Git 運用</a>
-    <a href="#s6-1">6-1. Issue</a>
-    <a href="#s6-2">6-2. ブランチ</a>
-    <a href="#s6-3">6-3. コミット</a>
-    <a href="#s6-4">6-4. PR</a>
-    <a href="#ch7" class="is-chapter">7. デザインカンプ</a>
-    <a href="#s7-1">7-1. 確認観点</a>
-    <a href="#s7-2">7-2. 確認手順</a>
-    <a href="#s7-3">7-3. 情報がないとき</a>
+    <a href="#s5-1">5-1. 全案件共通</a>
+    <a href="#s5-2">5-2. aria-label / aria</a>
+    <a href="#s5-3">5-3. キーボード操作</a>
+    <a href="#s5-4">5-4. 対応フロー</a>
     <a href="#changelog" class="is-chapter">更新履歴</a>
   </nav>
 </aside>
@@ -388,10 +325,10 @@
 <main class="main">
 
 <header class="doc-header">
-  <h1>コードレビュー（FB）基準ガイド</h1>
+  <h1>サイト制作ガイドライン</h1>
   <div class="doc-meta">
     <div class="doc-meta-item"><strong>対象</strong> 社内エンジニア</div>
-    <div class="doc-meta-item"><strong>目的</strong> コードレビュー時のFB観点と、コーディング規約を統一する</div>
+    <div class="doc-meta-item"><strong>目的</strong> サイト制作におけるコーディング規約とレビュー基準を統一する</div>
     <div class="doc-meta-item"><strong>前提</strong> このガイドに書かれていることが社内の標準ルールです。<br>プロジェクト固有の事情で逸脱する場合は、PRやIssueにその旨を明記すること。</div>
   </div>
 </header>
@@ -634,17 +571,78 @@
 <h2 id="ch2"><span class="chapter-num">2</span>HTML — 属性・メタ情報</h2>
 
 <h3 id="s2-1">2-1. alt 属性</h3>
+
+<h4>基本ルール</h4>
 <div class="table-wrap">
 <table>
   <thead><tr><th>画像の種類</th><th>alt の書き方</th><th>例</th></tr></thead>
   <tbody>
-    <tr><td>意味のある画像</td><td>画像の内容を端的に書く</td><td><code>alt="代表取締役 山田太郎のプロフィール写真"</code></td></tr>
+    <tr><td>意味のある画像</td><td>画像の内容を端的に説明する</td><td><code>alt="代表取締役 山田太郎のプロフィール写真"</code></td></tr>
     <tr><td>装飾画像</td><td>空の alt を設定する</td><td><code>alt=""</code></td></tr>
     <tr><td>リンク内の画像（テキストなし）</td><td>リンク先の情報を書く</td><td><code>alt="会社概要ページへ"</code></td></tr>
+    <tr><td>図・グラフ</td><td>凡例や数値をもれなく書く（後述）</td><td>—</td></tr>
   </tbody>
 </table>
 </div>
 <div class="callout callout--important"><span class="callout-label">必須</span>alt 未設定（属性自体がない）は NG。空でもいいから必ず <code>alt</code> 属性をつける。</div>
+
+<h4>alt の書き方：「画像を説明する」とは</h4>
+<p>alt は <strong>「この画像が表示されなかったときに、代わりに何が伝わればいいか」</strong> を書く。判断基準は <strong>人が読み上げたときに自然かどうか</strong>。</p>
+
+<pre><span class="ok-label">&lt;!-- ✅ OK — 画像の内容が伝わる --&gt;</span>
+&lt;img src="/img/office.webp" alt="渋谷オフィスの受付エリア。白を基調とした内装に木製カウンターがある" width="800" height="600"&gt;
+
+<span class="ng-label">&lt;!-- ❌ NG — ファイル名をそのまま書いている --&gt;</span>
+&lt;img src="/img/office.webp" alt="office.webp" width="800" height="600"&gt;
+
+<span class="ng-label">&lt;!-- ❌ NG — 「画像」「写真」から始める（読み上げ時に「画像: 画像の〜」と冗長になる） --&gt;</span>
+&lt;img src="/img/office.webp" alt="画像：オフィスの写真" width="800" height="600"&gt;
+
+<span class="ng-label">&lt;!-- ❌ NG — 過不足がある --&gt;</span>
+&lt;img src="/img/office.webp" alt="写真" width="800" height="600"&gt;</pre>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>やりがちなミス</th><th>なぜダメか</th><th>正しい対応</th></tr></thead>
+  <tbody>
+    <tr><td>ファイル名をそのまま書く</td><td>内容が伝わらない</td><td>画像に写っているものを説明する</td></tr>
+    <tr><td>「画像」「写真」「イメージ」から始める</td><td>スクリーンリーダーが「画像:」を自動で読み上げるため二重になる</td><td>内容から直接書き始める</td></tr>
+    <tr><td>全部同じ alt にする</td><td>ページ内で複数の画像が同じ説明では区別がつかない</td><td>画像ごとに固有の説明を書く</td></tr>
+    <tr><td>過剰に長い alt</td><td>読み上げが冗長になる</td><td>1〜2文で端的に。長くても50文字程度を目安にする</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h4>図・グラフの alt</h4>
+<p>図やグラフの場合は、<strong>視覚的に読み取れる情報（凡例・数値・傾向）をもれなく書く</strong>。見えない人が alt だけで内容を把握できる状態を目指す。</p>
+
+<pre><span class="ok-label">&lt;!-- ✅ OK — 凡例と数値をもれなく書く --&gt;</span>
+&lt;img
+  src="/img/sales-chart.webp"
+  alt="2025年度の四半期別売上グラフ。Q1: 1,200万円、Q2: 1,500万円、Q3: 980万円、Q4: 2,100万円。Q4に最も売上が伸びている"
+  width="600" height="400"
+&gt;
+
+<span class="ok-label">&lt;!-- ✅ OK — 比較表の場合 --&gt;</span>
+&lt;img
+  src="/img/plan-comparison.webp"
+  alt="料金プラン比較表。ライトプラン: 月額980円、ストレージ10GB。スタンダードプラン: 月額1,980円、ストレージ50GB。プロプラン: 月額4,980円、ストレージ無制限"
+  width="800" height="400"
+&gt;
+
+<span class="ng-label">&lt;!-- ❌ NG — 凡例や数値がない --&gt;</span>
+&lt;img src="/img/sales-chart.webp" alt="売上グラフ" width="600" height="400"&gt;
+
+<span class="ng-label">&lt;!-- ❌ NG — 「グラフ」だけ --&gt;</span>
+&lt;img src="/img/sales-chart.webp" alt="グラフ" width="600" height="400"&gt;</pre>
+
+<p>図・グラフの alt を書くときのポイント：</p>
+<ul>
+  <li><strong>何のグラフかを最初に書く</strong>（「2025年度の四半期別売上グラフ」）</li>
+  <li><strong>凡例をもれなく書く</strong>（項目名と数値のセット）</li>
+  <li><strong>傾向や結論があれば最後に添える</strong>（「Q4に最も売上が伸びている」）</li>
+  <li><strong>読み上げたときに自然な日本語になるか</strong> を声に出して確認する</li>
+</ul>
 
 <h3 id="s2-2">2-2. ページごとに必須のメタ情報</h3>
 <p><strong>すべてのページで以下が入っていることを確認する。</strong></p>
@@ -676,8 +674,19 @@
 <!-- ═══════════════════════════════════════════ -->
 <h2 id="ch3"><span class="chapter-num">3</span>CSS</h2>
 
-<h3 id="s3-1">3-1. 設計：BEM</h3>
-<p>クラス命名は <strong>BEM（Block Element Modifier）</strong> に従う。</p>
+<h3 id="s3-1">3-1. クラス命名規則</h3>
+<p>命名規則は <strong>スタイルのスコープが自動で閉じるかどうか</strong> で使い分ける。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>環境</th><th>命名規則</th><th>理由</th></tr></thead>
+  <tbody>
+    <tr><td>WordPress / 素の HTML + SCSS など（module 化できない）</td><td><strong>BEM</strong></td><td>CSS がグローバルスコープのため、命名規則で衝突を防ぐ必要がある</td></tr>
+    <tr><td>Astro / Next.js など（module 化できる）</td><td><strong>シンプルな命名でOK</strong></td><td>フレームワークがスコープを自動で閉じるため、BEM の冗長さが不要</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h4>module 化できない環境 → BEM</h4>
 <div class="table-wrap">
 <table>
   <thead><tr><th>概念</th><th>命名ルール</th><th>例</th></tr></thead>
@@ -698,6 +707,19 @@
   </tbody>
 </table>
 </div>
+
+<h4>module 化できる環境 → シンプルな命名</h4>
+<p>Astro の Scoped CSS や Next.js の CSS Modules ではクラス名がハッシュ化されるため、BEM を使わなくてもクラス名の衝突は起きない。</p>
+<pre><span class="comment">/* Card.module.css（Next.js）/ &lt;style&gt; 内（Astro） */</span>
+.card { ... }
+.title { ... }        <span class="comment">/* BEM なら .card__title だが、スコープが閉じているので不要 */</span>
+.featured { ... }     <span class="comment">/* BEM なら .card--featured */</span></pre>
+<p>ただし、以下のルールは環境を問わず共通：</p>
+<ul>
+  <li><strong>見た目ベースの命名は避ける</strong>（<code>.red-button</code> → <code>.primary</code>）</li>
+  <li><strong>役割が伝わる名前にする</strong>（<code>.wrapper1</code> → <code>.hero-section</code>）</li>
+  <li><strong>ケバブケースで統一する</strong>（<code>.cardTitle</code> → <code>.card-title</code>）</li>
+</ul>
 
 <h3 id="s3-2">3-2. SCSS のルール</h3>
 
@@ -816,131 +838,33 @@ import styles from './Card.module.css';
   opacity: 0.7;
 }</pre>
 
-<h4>Tailwind v4 の場合</h4>
-<p><code>global.css</code> に <code>@custom-variant</code> でカスタムバリアントを定義する。</p>
-<pre><span class="comment">/* global.css */</span>
-@import "tailwindcss";
-
-@custom-variant hover-device (@media (any-hover: hover));</pre>
-<pre><span class="ok-label">&lt;!-- ✅ OK — hover-device バリアントを使う --&gt;</span>
-&lt;button class="hover-device:hover:opacity-70"&gt;ボタン&lt;/button&gt;
-
-<span class="ng-label">&lt;!-- ❌ NG — デフォルトの hover をそのまま使う --&gt;</span>
-&lt;button class="hover:opacity-70"&gt;ボタン&lt;/button&gt;</pre>
-
-<h4>Tailwind v3 の場合</h4>
-<p><code>tailwind.config.js</code> で <code>future.hoverOnlyWhenSupported</code> を <code>true</code> にする。これにより、すべての <code>hover:</code> ユーティリティが自動的に <code>@media (hover: hover)</code> で囲まれるようになる。</p>
-<pre><span class="comment">// tailwind.config.js</span>
-module.exports = {
-  future: {
-    hoverOnlyWhenSupported: true,
-  },
-}</pre>
-<pre><span class="ok-label">&lt;!-- ✅ OK — hoverOnlyWhenSupported: true なら、通常の hover: がそのまま安全に使える --&gt;</span>
-&lt;button class="hover:opacity-70"&gt;ボタン&lt;/button&gt;</pre>
-<p>設定を有効にするだけで既存の <code>hover:</code> がすべて対応されるため、カスタムバリアントの追加は不要。</p>
-
-<h4>まとめ</h4>
-<div class="table-wrap">
-<table>
-  <thead><tr><th>環境</th><th>設定場所</th><th>使い方</th></tr></thead>
-  <tbody>
-    <tr><td>SCSS / 素の CSS</td><td>不要（直接メディアクエリを書く）</td><td><code>@media (any-hover: hover) { .el:hover { ... } }</code></td></tr>
-    <tr><td>Tailwind v4</td><td><code>global.css</code> に <code>@custom-variant</code></td><td><code>hover-device:hover:opacity-70</code></td></tr>
-    <tr><td>Tailwind v3</td><td><code>tailwind.config.js</code> に <code>hoverOnlyWhenSupported: true</code></td><td>通常の <code>hover:opacity-70</code> がそのまま使える</td></tr>
-  </tbody>
-</table>
-</div>
-
-<h3 id="s3-5">3-5. Tailwind CSS（v4 基準）</h3>
-<p>Tailwind v4 では <code>tailwind.config.js</code> ではなく <strong><code>global.css</code>（CSS ファイル）でテーマを定義</strong> する。</p>
-
-<h4><code>text-sm</code> 等のデフォルトフォントサイズクラスは使わない</h4>
-<p>Tailwind のデフォルトテキストユーティリティ（<code>text-xs</code>、<code>text-sm</code>、<code>text-base</code>、<code>text-lg</code> 等）は <strong>使用禁止</strong>。</p>
-<p><strong>理由</strong>：これらのクラスには <code>font-size</code> と一緒に <code>line-height</code> が抱き合わせで設定されている。</p>
-<pre><span class="comment">/* Tailwind のデフォルト text-sm の中身 */</span>
-.text-sm {
-  font-size: 0.875rem;    <span class="comment">/* 14px */</span>
-  line-height: 1.25rem;   <span class="comment">/* ← これが勝手についてくる */</span>
-}</pre>
-<p>プロジェクトでは <code>line-height: 1.2</code> を基本としているため、デフォルトの <code>line-height</code> が邪魔になる。フォントサイズは <code>global.css</code> の <code>@theme</code> で独自に定義して使う。</p>
-
-<h4>変数の定義</h4>
-<p>変数名には <strong>px 値をそのまま入れる</strong>。<code>xs</code> / <code>sm</code> / <code>lg</code> のような抽象名は使わない。カンプの指定値と変数名が一致するため、迷わずに済む。</p>
-<pre><span class="comment">/* global.css */</span>
-@import "tailwindcss";
-
-@theme {
-  <span class="comment">/* フォントサイズ — px値を変数名にする。line-height は含めない */</span>
-  --font-size-10: 0.625rem;    <span class="comment">/* 10px */</span>
-  --font-size-12: 0.75rem;     <span class="comment">/* 12px */</span>
-  --font-size-14: 0.875rem;    <span class="comment">/* 14px */</span>
-  --font-size-16: 1rem;        <span class="comment">/* 16px */</span>
-  --font-size-18: 1.125rem;    <span class="comment">/* 18px */</span>
-  --font-size-20: 1.25rem;     <span class="comment">/* 20px */</span>
-  --font-size-24: 1.5rem;      <span class="comment">/* 24px */</span>
-  --font-size-30: 1.875rem;    <span class="comment">/* 30px */</span>
-
-  <span class="comment">/* カラー */</span>
-  --color-brand: #1a2b3c;
-  --color-accent: #e63946;
-
-  <span class="comment">/* スペーシング */</span>
-  --spacing-18: 4.5rem;
-}</pre>
-
-<pre><span class="ng-label">&lt;!-- ❌ NG — デフォルトの text-sm（line-height が勝手につく） --&gt;</span>
-&lt;p class="text-sm"&gt;テキスト&lt;/p&gt;
-
-<span class="ok-label">&lt;!-- ✅ OK — カンプで14pxと指定されていたら text-14 --&gt;</span>
-&lt;p class="text-14"&gt;テキスト&lt;/p&gt;
-
-<span class="ok-label">&lt;!-- ✅ OK — カンプで24pxと指定されていたら text-24 --&gt;</span>
-&lt;h2 class="text-24"&gt;見出し&lt;/h2&gt;</pre>
-
-<p>プロジェクトで使うサイズが増えた場合は、<code>@theme</code> に <code>--font-size-28: 1.75rem;</code> のように追加する。</p>
-
-<h4>任意値（<code>[]</code>）のルール</h4>
-<div class="table-wrap">
-<table>
-  <thead><tr><th>観点</th><th>基準</th></tr></thead>
-  <tbody>
-    <tr><td>任意値（<code>[]</code>）</td><td><strong>むやみに使わない</strong>。Tailwind のユーティリティクラスで済むならそちらを使う</td></tr>
-    <tr><td>繰り返す任意値</td><td>同じ値を複数箇所で使う場合は <code>global.css</code> の <code>@theme</code> で変数として定義する</td></tr>
-    <tr><td><code>@apply</code></td><td>コンポーネント的に繰り返すスタイルのまとめに使う。多用しすぎないこと</td></tr>
-  </tbody>
-</table>
-</div>
-
-<h3 id="s3-6">3-6. レスポンシブ</h3>
+<h3 id="s3-5">3-5. レスポンシブ</h3>
 <div class="table-wrap">
 <table>
   <thead><tr><th>観点</th><th>基準</th></tr></thead>
   <tbody>
     <tr><td>方針</td><td><strong>SPファースト</strong>。デフォルトのスタイルを SP 向けに書き、ブレークポイントで PC 向けを上書きする</td></tr>
-    <tr><td>ブレークポイント</td><td><strong>Tailwind のデフォルトに準ずる</strong></td></tr>
   </tbody>
 </table>
 </div>
 
+<p>標準ブレークポイント:</p>
 <div class="table-wrap">
 <table>
-  <thead><tr><th>プレフィックス</th><th>最小幅</th><th>主な用途</th></tr></thead>
+  <thead><tr><th>最小幅</th><th>主な用途</th></tr></thead>
   <tbody>
-    <tr><td>（なし）</td><td>—</td><td>SP（ベース）</td></tr>
-    <tr><td><code>sm</code></td><td>640px</td><td>—</td></tr>
-    <tr><td><code>md</code></td><td>768px</td><td>タブレット</td></tr>
-    <tr><td><code>lg</code></td><td>1024px</td><td>PC</td></tr>
-    <tr><td><code>xl</code></td><td>1280px</td><td>ワイドPC</td></tr>
-    <tr><td><code>2xl</code></td><td>1536px</td><td>—</td></tr>
+    <tr><td>—</td><td>SP（ベース）</td></tr>
+    <tr><td>768px</td><td>タブレット</td></tr>
+    <tr><td>1024px</td><td>PC</td></tr>
+    <tr><td>1280px</td><td>ワイドPC</td></tr>
   </tbody>
 </table>
 </div>
 <pre><span class="comment">// SPファースト = min-width で上書き</span>
-@media (min-width: 768px) { ... }  <span class="comment">// md</span>
-@media (min-width: 1024px) { ... } <span class="comment">// lg</span></pre>
+@media (min-width: 768px) { ... }
+@media (min-width: 1024px) { ... }</pre>
 
-<h3 id="s3-7">3-7. よくある指摘パターン</h3>
+<h3 id="s3-6">3-6. よくある指摘パターン</h3>
 <div class="table-wrap">
 <table>
   <thead><tr><th>やりがちなミス</th><th>正しい対応</th></tr></thead>
@@ -1077,200 +1001,348 @@ renderTotal(total);</pre>
 <!-- ═══════════════════════════════════════════ -->
 <!-- 5. アクセシビリティ                           -->
 <!-- ═══════════════════════════════════════════ -->
-<h2 id="ch5"><span class="chapter-num">5</span>アクセシビリティ（現状の方針）</h2>
-<div class="callout callout--future"><span class="callout-label">今後の予定</span>今後、社内ガイドラインとして正式に整備する予定の領域です。現時点では以下の最低限の対応を行い、詳細なルールは別途策定後に展開します。</div>
+<h2 id="ch5"><span class="chapter-num">5</span>アクセシビリティ</h2>
+<p class="section-lead">案件ごとにアクセシビリティ要件がある場合に対応する。要件の有無にかかわらず、「5-1. 全案件共通」は常に適用する。</p>
 
-<h4>現時点でやること</h4>
+<h3 id="s5-1">5-1. 全案件共通（要件の有無に関係なく対応する）</h3>
 <div class="table-wrap">
 <table>
   <thead><tr><th>観点</th><th>対応</th></tr></thead>
   <tbody>
-    <tr><td><code>focus-visible</code></td><td>キーボード操作時にフォーカスが視認できること。hover を実装したら focus も実装する</td></tr>
-    <tr><td>セマンティックな HTML</td><td>本ガイドの「1. HTML — 要素の使い分け」に沿っていれば、基本的なアクセシビリティは担保される</td></tr>
+    <tr><td>セマンティックな HTML</td><td>本ガイドの「1. HTML — 要素の使い分け」に沿う</td></tr>
     <tr><td><code>alt</code> 属性</td><td>本ガイド「2-1. alt 属性」のルールに従う</td></tr>
     <tr><td>フォームの <code>label</code></td><td><code>input</code> / <code>select</code> / <code>textarea</code> には必ず対応する <code>label</code> を紐づける</td></tr>
+    <tr><td><code>focus-visible</code></td><td>hover を実装したら focus も実装する</td></tr>
   </tbody>
 </table>
 </div>
 
-<h4>現時点では「追って対応」とするもの</h4>
+<h3 id="s5-2">5-2. aria-label / aria 属性</h3>
+<p><code>aria-label</code> は <strong>スクリーンリーダーに「この要素が何か」を伝える</strong> ための属性。見た目ではわからない情報を補完する。</p>
+
+<h4>いつ使うか</h4>
 <div class="table-wrap">
 <table>
-  <thead><tr><th>観点</th><th>備考</th></tr></thead>
+  <thead><tr><th>状況</th><th>対応</th><th>例</th></tr></thead>
   <tbody>
-    <tr><td><code>aria-*</code> 属性</td><td>モーダル・タブ・アコーディオン等のインタラクションに必要だが、ガイドライン策定後に導入する</td></tr>
-    <tr><td>ランドマークロール</td><td><code>role</code> 属性による明示的な指定。セマンティック HTML で暗黙的にカバーできる範囲はそのまま</td></tr>
-    <tr><td>スクリーンリーダーテスト</td><td>テスト手順・対象ブラウザを含めてガイドラインで定義予定</td></tr>
-    <tr><td>キーボードナビゲーション</td><td>Tab / Enter / Esc での操作フローの設計。コンポーネントごとのルールをガイドラインで定義予定</td></tr>
-  </tbody>
-</table>
-</div>
-<div class="callout callout--important"><span class="callout-label">重要</span>「追って対応」は「やらなくていい」ではない。現時点で判断基準が未整備なだけなので、自分で aria 属性等を調べて書ける場合は積極的に取り入れてよい。ただし、独自判断で入れた場合はレビュー時にその旨を伝えること。</div>
-
-<hr>
-
-<!-- ═══════════════════════════════════════════ -->
-<!-- 6. Git 運用                                  -->
-<!-- ═══════════════════════════════════════════ -->
-<h2 id="ch6"><span class="chapter-num">6</span>Git 運用（Issue・ブランチ・コミット・PR）</h2>
-
-<h3 id="s6-1">6-1. Issue（イシュー）</h3>
-<p>作業を始める前に <strong>必ず Issue を作成する</strong>。Issue がすべての起点になる。</p>
-<div class="table-wrap">
-<table>
-  <thead><tr><th>観点</th><th>基準</th></tr></thead>
-  <tbody>
-    <tr><td>作成タイミング</td><td>コードを書き始める前に Issue を立てる。Issue なしで作業を始めない</td></tr>
-    <tr><td>タイトル</td><td>何をするかが一目でわかること（例：「TOPページ作成」「お問い合わせフォームのバリデーション実装」）</td></tr>
-    <tr><td>内容</td><td>やること・完了条件を書く。不明点があればその時点で書いておく</td></tr>
+    <tr><td>アイコンだけのボタン（テキストがない）</td><td><code>aria-label</code> でボタンの機能を伝える</td><td><code>&lt;button aria-label="メニューを開く"&gt;</code></td></tr>
+    <tr><td>同じテキストのリンクが複数ある</td><td><code>aria-label</code> で区別する</td><td><code>&lt;a aria-label="お知らせ「新サービス開始」の詳細"&gt;詳しく見る&lt;/a&gt;</code></td></tr>
+    <tr><td>ナビゲーションが複数ある</td><td><code>aria-label</code> で区別する</td><td><code>&lt;nav aria-label="グローバルナビゲーション"&gt;</code></td></tr>
+    <tr><td>入力欄にラベルが視覚的にない</td><td><code>aria-label</code> で代替する</td><td><code>&lt;input type="search" aria-label="サイト内検索"&gt;</code></td></tr>
   </tbody>
 </table>
 </div>
 
-<h3 id="s6-2">6-2. ブランチ運用</h3>
+<pre><span class="ok-label">&lt;!-- ✅ OK — アイコンのみのボタンに aria-label --&gt;</span>
+&lt;button aria-label="メニューを開く" data-action="toggle-menu"&gt;
+  &lt;svg&gt;<span class="comment">&lt;!-- ハンバーガーアイコン --&gt;</span>&lt;/svg&gt;
+&lt;/button&gt;
+
+<span class="ok-label">&lt;!-- ✅ OK — 「詳しく見る」が複数ある場合、aria-label で区別 --&gt;</span>
+&lt;a href="/news/1" aria-label="お知らせ「新サービス開始」の詳細"&gt;詳しく見る&lt;/a&gt;
+&lt;a href="/news/2" aria-label="お知らせ「年末休業のご案内」の詳細"&gt;詳しく見る&lt;/a&gt;
+
+<span class="ng-label">&lt;!-- ❌ NG — アイコンだけで aria-label がない --&gt;</span>
+&lt;button data-action="toggle-menu"&gt;
+  &lt;svg&gt;<span class="comment">&lt;!-- ハンバーガーアイコン --&gt;</span>&lt;/svg&gt;
+&lt;/button&gt;
+
+<span class="ng-label">&lt;!-- ❌ NG — 複数の「詳しく見る」が区別できない --&gt;</span>
+&lt;a href="/news/1"&gt;詳しく見る&lt;/a&gt;
+&lt;a href="/news/2"&gt;詳しく見る&lt;/a&gt;</pre>
+
+<h4><code>aria-hidden</code> — 装飾要素を読み上げから除外する</h4>
+<p>意味を持たない装飾目的の画像・HTML要素には <code>aria-hidden="true"</code> を設定し、スクリーンリーダーの読み上げ対象から除外する。</p>
+
+<p><strong>装飾画像・アイコン</strong>:</p>
+<pre><span class="ok-label">&lt;!-- ✅ OK — テキストの隣にある装飾アイコンは aria-hidden で除外 --&gt;</span>
+&lt;a href="/contact"&gt;
+  &lt;svg aria-hidden="true"&gt;<span class="comment">&lt;!-- 矢印アイコン --&gt;</span>&lt;/svg&gt;
+  お問い合わせ
+&lt;/a&gt;
+
+<span class="ok-label">&lt;!-- ✅ OK — テキストと併記される装飾画像 --&gt;</span>
+&lt;div class="card"&gt;
+  &lt;img src="/img/decoration-line.svg" alt="" aria-hidden="true"&gt;
+  &lt;p&gt;サービスの説明文...&lt;/p&gt;
+&lt;/div&gt;
+
+<span class="ng-label">&lt;!-- ❌ NG — 装飾アイコンが読み上げられてしまう --&gt;</span>
+&lt;a href="/contact"&gt;
+  &lt;svg&gt;<span class="comment">&lt;!-- 矢印アイコン --&gt;</span>&lt;/svg&gt;
+  お問い合わせ
+&lt;/a&gt;</pre>
+
+<p><strong>装飾的な HTML 要素</strong>:</p>
+<pre><span class="ok-label">&lt;!-- ✅ OK — 見た目だけの区切り線やバッジ装飾は aria-hidden --&gt;</span>
+&lt;span class="badge" aria-hidden="true"&gt;NEW&lt;/span&gt;
+&lt;h3&gt;新サービスのご案内&lt;/h3&gt;
+
+<span class="ok-label">&lt;!-- ✅ OK — 背景装飾用の空要素 --&gt;</span>
+&lt;div class="hero"&gt;
+  &lt;div class="hero__bg-circle" aria-hidden="true"&gt;&lt;/div&gt;
+  &lt;h1&gt;メインタイトル&lt;/h1&gt;
+&lt;/div&gt;
+
+<span class="ok-label">&lt;!-- ✅ OK — 見た目だけの区切り記号 --&gt;</span>
+&lt;nav aria-label="パンくずリスト"&gt;
+  &lt;a href="/"&gt;HOME&lt;/a&gt;
+  &lt;span aria-hidden="true"&gt; &amp;gt; &lt;/span&gt;
+  &lt;a href="/about"&gt;会社概要&lt;/a&gt;
+&lt;/nav&gt;</pre>
+
 <div class="table-wrap">
 <table>
-  <thead><tr><th>観点</th><th>基準</th></tr></thead>
+  <thead><tr><th>対象</th><th><code>aria-hidden="true"</code></th><th>補足</th></tr></thead>
   <tbody>
-    <tr><td>ブランチ名</td><td><strong><code>feature/イシュー番号</code></strong> の形式にする（例：<code>feature/111</code>、<code>fix/205</code>）</td></tr>
-    <tr><td>作業ブランチの起点</td><td>最新の <code>develop</code>（または指定ブランチ）から切る</td></tr>
-    <tr><td>マージ前</td><td>push 前に最新の <code>develop</code> を取り込み、コンフリクトを解消する</td></tr>
+    <tr><td>テキストの隣にある装飾 SVG / アイコン</td><td><strong>つける</strong></td><td>テキストが意味を担っているのでアイコンは不要</td></tr>
+    <tr><td>背景装飾用の空 <code>div</code> / <code>span</code></td><td><strong>つける</strong></td><td>読み上げに情報がない</td></tr>
+    <tr><td>パンくず等の区切り記号（<code>&gt;</code> <code>/</code> <code>|</code>）</td><td><strong>つける</strong></td><td>読み上げると逆にノイズになる</td></tr>
+    <tr><td>「NEW」等の装飾バッジ（テキストで同内容が書かれている場合）</td><td><strong>つける</strong></td><td>見出し等で同じ情報が伝わるなら二重読みを防ぐ</td></tr>
+    <tr><td>意味のあるアイコン（テキストなし）</td><td><strong>つけない</strong></td><td><code>aria-label</code> で機能を伝える（前述のアイコンボタン参照）</td></tr>
   </tbody>
 </table>
 </div>
 
-<h3 id="s6-3">6-3. コミット</h3>
-<p>コミットは <strong>Issue の主題に対して、文脈ごとに分ける</strong>。</p>
-<p>1つの Issue の中でも「本題の実装」「FBへの対応」「たまたま気づいた修正」は別の文脈なので、コミットを分ける。</p>
+<div class="callout callout--important"><span class="callout-label">注意</span><code>aria-hidden="true"</code> をつけた要素の中にフォーカス可能な要素（<code>a</code>、<code>button</code>、<code>input</code> 等）を含めない。フォーカスは当たるが読み上げられない状態になり、操作不能になる。</div>
 
-<h4>具体例：Issue #111「TOPページ作成」の場合</h4>
-<pre>feat: #111 TOPページのヒーローセクションを実装
-feat: #111 TOPページのお知らせカード一覧を実装
-feat: #111 TOPページのSPレスポンシブ対応
-fix: #111 FBを受けてヒーローセクションの余白を修正
-fix: #111 FBを受けてカード内のフォントサイズを調整
-fix: 共通ヘッダーのロゴリンクのalt修正（#111作業中に発見）</pre>
+<h4>装飾的な句読点・記号は CSS 擬似要素で出す</h4>
+<p>見出しやリストの装飾として句読点・記号（<code>/</code>、<code>|</code>、<code>・</code>、<code>-</code> 等）を入れる場合は、HTML ではなく <strong>CSS の <code>::before</code> / <code>::after</code></strong> で出す。</p>
+<p>装飾的なコンテンツは見た目の責務なので、HTML（構造）ではなく CSS（表現）で扱うのが正しい。HTML に書いて <code>aria-hidden</code> で隠す方法でも動くが、「意味のある要素を後から消す」ことになるため、最初から CSS で出す方がセマンティクス的に正しい。</p>
+
+<pre><span class="ok-label">&lt;!-- ✅ OK — CSS 擬似要素で装飾の区切りを出す --&gt;</span>
+&lt;ul class="tag-list"&gt;
+  &lt;li&gt;デザイン&lt;/li&gt;
+  &lt;li&gt;コーディング&lt;/li&gt;
+  &lt;li&gt;ディレクション&lt;/li&gt;
+&lt;/ul&gt;</pre>
+
+<pre><span class="ok-label">/* ✅ 区切り記号は CSS で出す → 読み上げに影響しない */</span>
+.tag-list {
+  display: flex;
+  list-style: none;
+}
+.tag-list li + li::before {
+  content: "/";
+  margin-inline: 0.5em;
+}</pre>
+
+<pre><span class="ng-label">&lt;!-- ❌ NG — HTML に装飾の区切りを書いて aria-hidden で隠す --&gt;</span>
+&lt;ul class="tag-list"&gt;
+  &lt;li&gt;デザイン&lt;/li&gt;
+  &lt;li&gt;&lt;span aria-hidden="true"&gt;/&lt;/span&gt;コーディング&lt;/li&gt;
+  &lt;li&gt;&lt;span aria-hidden="true"&gt;/&lt;/span&gt;ディレクション&lt;/li&gt;
+&lt;/ul&gt;</pre>
 
 <div class="table-wrap">
 <table>
-  <thead><tr><th>観点</th><th>基準</th></tr></thead>
+  <thead><tr><th>方法</th><th>評価</th><th>理由</th></tr></thead>
   <tbody>
-    <tr><td>コミット単位</td><td>Issue の主題に沿った文脈ごとに分ける。「本題」「FB対応」「偶然気づいた修正」は別コミット</td></tr>
-    <tr><td>コミットメッセージ</td><td><strong>何を・なぜ</strong> が伝わること。Issue 番号をメッセージに含める</td></tr>
-    <tr><td>メッセージ形式</td><td><code>feat:</code> / <code>fix:</code> / <code>style:</code> 等の prefix をつける</td></tr>
-    <tr><td>不要ファイル</td><td><code>.DS_Store</code>、<code>node_modules/</code>、IDE設定ファイル等をコミットしない</td></tr>
-    <tr><td>NG なメッセージ</td><td><code>fix</code>、<code>update</code>、<code>修正</code>、<code>対応</code> だけのメッセージ</td></tr>
-  </tbody>
-</table>
-</div>
-<p><strong>なぜ文脈で分けるのか</strong>：レビュー時に「本題の実装」と「FB対応」と「ついでの修正」が混ざっていると、何が意図的な変更で何が副次的な変更か判別できない。revert が必要になったときにも困る。</p>
-
-<h3 id="s6-4">6-4. PR（プルリクエスト）</h3>
-
-<h4>関連 Issue の紐付け</h4>
-<p>PRには <strong>必ず関連 Issue を紐付ける</strong>。</p>
-<div class="table-wrap">
-<table>
-  <thead><tr><th>状況</th><th>書き方</th></tr></thead>
-  <tbody>
-    <tr><td>PR をマージしたら Issue を閉じたい</td><td>PR本文に <code>closes #111</code> と書く</td></tr>
-    <tr><td>Issue に関連するが、まだ閉じない</td><td>PR本文に <code>relates to #111</code> と書く、または GitHub の関連 Issue 欄で紐付ける</td></tr>
-  </tbody>
-</table>
-</div>
-
-<h4>PR 本文に書くこと</h4>
-<p>以下の項目を <strong>すべて</strong> 記載する。テンプレートとして使うこと。</p>
-<pre>## 概要
-<span class="comment">&lt;!-- このPRで何をしたか。1〜3行で端的に --&gt;</span>
-
-## 変更ファイル
-<span class="comment">&lt;!-- 変更した主要ファイルと、それぞれ何を変えたかの概要 --&gt;</span>
-- `src/pages/top.html` — TOPページの HTML を新規作成
-- `src/styles/pages/_top.scss` — TOPページ用のスタイルを追加
-- `src/scripts/slider.js` — ヒーロースライダーの動作を実装
-
-## 関連イシュー
-<span class="comment">&lt;!-- closes で閉じるか、relates to で紐付ける --&gt;</span>
-closes #111
-
-## スクリーンショット
-<span class="comment">&lt;!-- 見た目の変更がある場合は Before / After を貼る --&gt;</span>
-| Before | After |
-|--------|-------|
-| （画像） | （画像） |
-
-## 補足・悩んだ箇所
-<span class="comment">&lt;!-- 実装で迷った点、レビューで見てほしいポイント --&gt;</span>
-- カードの並びを grid で実装（SP→PCのカラム変更がシンプルなため）
-- ヒーロー画像の遅延読み込みは今回未対応（Issue #112 で対応予定）
-
-## 未対応
-<span class="comment">&lt;!-- このPRでは対応しないこと --&gt;</span>
-- アニメーション（デザイン確定待ち）
-- OGP画像の設定（素材待ち）</pre>
-
-<h4>PR 提出前の確認</h4>
-<div class="table-wrap">
-<table>
-  <thead><tr><th>観点</th><th>基準</th></tr></thead>
-  <tbody>
-    <tr><td>diff の確認</td><td>自分で diff を見て、意図しない変更がないか確認してから出す</td></tr>
-    <tr><td>未対応の明記</td><td>やっていないことを「未対応」欄に書く。書かないとレビュアーが見落としか意図的か判断できない</td></tr>
+    <tr><td>CSS 擬似要素（<code>::before</code> / <code>::after</code>）</td><td class="ok">推奨</td><td>装飾は CSS の責務。読み上げに影響しない</td></tr>
+    <tr><td><code>span</code> + <code>aria-hidden="true"</code></td><td class="ng">非推奨</td><td>動くが、構造と表現が混在する</td></tr>
   </tbody>
 </table>
 </div>
 
-<hr>
+<p><strong>装飾目的で分割された要素の読み上げ対策</strong></p>
+<p>アニメーションやスタイリングのために1つの単語・数値を <code>span</code> で1文字ずつ分割するケースがある。この場合、スクリーンリーダーは <code>span</code> ごとに区切って読み上げてしまい、意味が伝わらない。</p>
+<p><strong>対策</strong>：分割された <code>span</code> を <code>aria-hidden="true"</code> で読み上げから除外し、外側の要素に <code>aria-label</code> で正しいテキストを設定する。</p>
 
-<!-- ═══════════════════════════════════════════ -->
-<!-- 7. デザインカンプとの差異チェック                -->
-<!-- ═══════════════════════════════════════════ -->
-<h2 id="ch7"><span class="chapter-num">7</span>デザインカンプとの差異チェック</h2>
-<p class="section-lead"><strong>「ピクセルパーフェクト」が目的ではない。</strong><br>デザインの意図を汲み取って、仕様として正しく再現できているかを見る。</p>
+<pre><span class="ng-label">&lt;!-- ❌ NG — span で分割すると「イチ」「ゼロ」「ゼロ」「パーセント」と読まれる --&gt;</span>
+&lt;div&gt;
+  &lt;span&gt;1&lt;/span&gt;&lt;span&gt;0&lt;/span&gt;&lt;span&gt;0&lt;/span&gt;&lt;span&gt;%&lt;/span&gt;
+&lt;/div&gt;
 
-<h3 id="s7-1">7-1. 確認観点</h3>
+<span class="ok-label">&lt;!-- ✅ OK — aria-label で正しい読み上げ、span は aria-hidden で除外 --&gt;</span>
+&lt;div aria-label="100パーセント"&gt;
+  &lt;span aria-hidden="true"&gt;1&lt;/span&gt;
+  &lt;span aria-hidden="true"&gt;0&lt;/span&gt;
+  &lt;span aria-hidden="true"&gt;0&lt;/span&gt;
+  &lt;span aria-hidden="true"&gt;%&lt;/span&gt;
+&lt;/div&gt;</pre>
+
+<pre><span class="ng-label">&lt;!-- ❌ NG — 「エ」「ー」「ビ」「ー」「シ」「ー」と1文字ずつ読まれる --&gt;</span>
+&lt;h2&gt;
+  &lt;span&gt;A&lt;/span&gt;&lt;span&gt;B&lt;/span&gt;&lt;span&gt;C&lt;/span&gt;株式会社
+&lt;/h2&gt;
+
+<span class="ok-label">&lt;!-- ✅ OK — h2 に aria-label、装飾部分は aria-hidden --&gt;</span>
+&lt;h2 aria-label="ABC株式会社"&gt;
+  &lt;span aria-hidden="true"&gt;A&lt;/span&gt;
+  &lt;span aria-hidden="true"&gt;B&lt;/span&gt;
+  &lt;span aria-hidden="true"&gt;C&lt;/span&gt;
+  株式会社
+&lt;/h2&gt;</pre>
+
+<p>このパターンが発生しやすい場面：</p>
+<ul>
+  <li>数値のカウントアップアニメーション（<code>100%</code>、<code>1,200件</code> 等）</li>
+  <li>1文字ずつ出現するテキストアニメーション</li>
+  <li>文字間にスタイルを個別に当てるデザイン</li>
+</ul>
+
+<h4>インタラクティブコンポーネントの aria 属性</h4>
+<p>モーダル・タブ・アコーディオン等のコンポーネントは、案件の要件に応じて以下の aria 属性を実装する。</p>
+
+<p><strong>モーダル</strong>:</p>
+<pre><span class="comment">&lt;!-- モーダルのトリガー --&gt;</span>
+&lt;button data-action="open-modal" aria-haspopup="dialog"&gt;お問い合わせ&lt;/button&gt;
+
+<span class="comment">&lt;!-- モーダル本体 --&gt;</span>
+&lt;div role="dialog" aria-modal="true" aria-labelledby="modal-title" data-element="modal"&gt;
+  &lt;h2 id="modal-title"&gt;お問い合わせフォーム&lt;/h2&gt;
+  <span class="comment">&lt;!-- コンテンツ --&gt;</span>
+  &lt;button data-action="close-modal" aria-label="モーダルを閉じる"&gt;✕&lt;/button&gt;
+&lt;/div&gt;</pre>
+
 <div class="table-wrap">
 <table>
-  <thead><tr><th>観点</th><th>確認方法</th><th>基準</th></tr></thead>
+  <thead><tr><th>属性</th><th>用途</th></tr></thead>
   <tbody>
-    <tr><td>フォントファミリー</td><td>DevTools で適用されているフォントを確認</td><td>カンプ指定のフォントが当たっていること</td></tr>
-    <tr><td>フォントサイズ</td><td>DevTools で実測</td><td>カンプ指定値を <code>px</code> で設定（±1px 以内）。<strong>今後 <code>rem</code> に統一予定</strong></td></tr>
-    <tr><td>フォントウェイト</td><td>DevTools で確認</td><td>カンプ指定値と一致していること</td></tr>
-    <tr><td><code>line-height</code></td><td>DevTools で確認</td><td><strong><code>1.2</code> を基本とする</strong>（別途指定がある場合はそちらに従う）</td></tr>
-    <tr><td><code>letter-spacing</code></td><td>DevTools で確認</td><td><strong>単位は <code>em</code> を使う</strong>。カンプの値を em に換算して設定する</td></tr>
-    <tr><td>カラー</td><td>テキスト色・背景色・ボーダー色</td><td>カンプ通りの値を使う。「近い色」で済ませない</td></tr>
-    <tr><td>余白</td><td>margin / padding がカンプの指定値と合っているか</td><td>±2px。デザイントークンがあればそちらに合わせる</td></tr>
-    <tr><td>アイコン・画像</td><td>サイズ・位置・アスペクト比</td><td>崩れていないこと</td></tr>
-    <tr><td>インタラクション</td><td>hover / active / focus / disabled</td><td>定義があれば実装。なければ確認を取る（自己判断で省略しない）</td></tr>
+    <tr><td><code>role="dialog"</code></td><td>モーダルであることを伝える</td></tr>
+    <tr><td><code>aria-modal="true"</code></td><td>背景のコンテンツが操作できないことを伝える</td></tr>
+    <tr><td><code>aria-labelledby</code></td><td>モーダルのタイトル要素を紐づける</td></tr>
+    <tr><td><code>aria-haspopup="dialog"</code></td><td>トリガーボタンが「ダイアログを開く」ことを伝える</td></tr>
   </tbody>
 </table>
 </div>
 
-<p><code>letter-spacing</code> の換算例：</p>
-<pre><span class="comment">カンプの指定値が 50（1/1000 em 単位の場合）:</span>
-letter-spacing: 0.05em;
+<p><strong>タブ</strong>:</p>
+<pre>&lt;div role="tablist" aria-label="サービス情報"&gt;
+  &lt;button role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1"&gt;プラン&lt;/button&gt;
+  &lt;button role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2"&gt;料金&lt;/button&gt;
+&lt;/div&gt;
+&lt;div role="tabpanel" id="panel-1" aria-labelledby="tab-1"&gt;
+  <span class="comment">&lt;!-- プランの内容 --&gt;</span>
+&lt;/div&gt;
+&lt;div role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden&gt;
+  <span class="comment">&lt;!-- 料金の内容 --&gt;</span>
+&lt;/div&gt;</pre>
 
-<span class="comment">カンプの指定値が 100:</span>
-letter-spacing: 0.1em;</pre>
-
-<h3 id="s7-2">7-2. 確認手順</h3>
-<ol>
-  <li><strong>DevTools</strong> でフォントサイズ・余白・色を実測する</li>
-  <li><strong>PerfectPixel</strong>（Chrome 拡張機能）でカンプとブラウザ表示を重ねて差異を確認する</li>
-  <li><strong>Chrome と Safari</strong> の両方で表示を確認する</li>
-  <li><strong>スマホ実機で確認</strong>（シミュレータだけで済ませない）</li>
-</ol>
-
-<h3 id="s7-3">7-3. カンプに情報がないときの対応</h3>
 <div class="table-wrap">
 <table>
-  <thead><tr><th>状況</th><th>対応</th></tr></thead>
+  <thead><tr><th>属性</th><th>用途</th></tr></thead>
   <tbody>
-    <tr><td>SP のデザインがない</td><td>自己判断で実装せず確認する</td></tr>
-    <tr><td>hover 等の定義がない</td><td>同上。「ないから実装しない」は NG</td></tr>
-    <tr><td>中間ブレークポイントの指定がない</td><td>基本的には 768px または 1024px で対応する</td></tr>
-    <tr><td>テキスト量がカンプと異なる</td><td>長文・短文の両方で崩れないか自分で確認する</td></tr>
+    <tr><td><code>role="tablist"</code> / <code>role="tab"</code> / <code>role="tabpanel"</code></td><td>タブUIであることを伝える</td></tr>
+    <tr><td><code>aria-selected</code></td><td>現在選択中のタブを示す</td></tr>
+    <tr><td><code>aria-controls</code></td><td>タブが制御するパネルの id を紐づける</td></tr>
+    <tr><td><code>aria-labelledby</code></td><td>パネルに対応するタブを紐づける</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>アコーディオン</strong>:</p>
+<p><code>aria-expanded</code> と <code>aria-controls</code> は <strong>必ずセットで使う</strong>。<code>aria-expanded</code> だけでは「何が開閉するのか」がスクリーンリーダーに伝わらない。</p>
+
+<pre><span class="ok-label">&lt;!-- ✅ OK — aria-expanded + aria-controls で開閉対象を紐づけている --&gt;</span>
+&lt;h3&gt;
+  &lt;button aria-expanded="false" aria-controls="accordion-1" data-action="toggle-accordion"&gt;
+    よくある質問 Q1
+  &lt;/button&gt;
+&lt;/h3&gt;
+&lt;div id="accordion-1" role="region" aria-labelledby="accordion-1-heading" hidden&gt;
+  <span class="comment">&lt;!-- 回答の内容 --&gt;</span>
+&lt;/div&gt;
+
+<span class="ng-label">&lt;!-- ❌ NG — aria-expanded だけで aria-controls がない --&gt;</span>
+&lt;h3&gt;
+  &lt;button aria-expanded="false" data-action="toggle-accordion"&gt;
+    よくある質問 Q1
+  &lt;/button&gt;
+&lt;/h3&gt;
+&lt;div data-element="accordion-1" hidden&gt;
+  <span class="comment">&lt;!-- 開閉対象との関連付けがされていない --&gt;</span>
+&lt;/div&gt;</pre>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>属性</th><th>用途</th><th>単体で使えるか</th></tr></thead>
+  <tbody>
+    <tr><td><code>aria-expanded</code></td><td>開閉状態を伝える。JS で <code>true</code> / <code>false</code> を切り替える</td><td><strong>不可</strong>。<code>aria-controls</code> とセットで使う</td></tr>
+    <tr><td><code>aria-controls</code></td><td>ボタンが制御する要素の id を紐づける</td><td><code>aria-expanded</code> と併用する</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout callout--important"><span class="callout-label">実装時の注意点</span>
+開閉対象の要素に <code>id</code> を設定し、ボタンの <code>aria-controls</code> にその <code>id</code> を指定する。JS で開閉を切り替えるとき、<code>aria-expanded</code> の <code>true</code> / <code>false</code> も必ず連動させる。この関連付けがないと「ボタンは開閉状態を持っているが、何を開閉するのかわからない」状態になる。</div>
+
+<h3 id="s5-3">5-3. キーボード操作</h3>
+<p>案件の要件に応じて、以下のキーボード操作を実装する。</p>
+
+<h4>全コンポーネント共通</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>キー</th><th>動作</th></tr></thead>
+  <tbody>
+    <tr><td><code>Tab</code></td><td>フォーカス可能な要素を順に移動する</td></tr>
+    <tr><td><code>Shift + Tab</code></td><td>フォーカスを逆方向に移動する</td></tr>
+    <tr><td><code>Enter</code> / <code>Space</code></td><td>ボタン・リンクを実行する</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h4>モーダル</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>キー</th><th>動作</th></tr></thead>
+  <tbody>
+    <tr><td><code>Esc</code></td><td>モーダルを閉じる</td></tr>
+    <tr><td><code>Tab</code></td><td>モーダル内でフォーカスをループさせる（背景に抜けない）</td></tr>
+  </tbody>
+</table>
+</div>
+<pre><span class="ok-label">// ✅ フォーカストラップの基本実装</span>
+function trapFocus(modalElement) {
+  const focusable = modalElement.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  );
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  modalElement.addEventListener('keydown', (e) =&gt; {
+    if (e.key !== 'Tab') return;
+    if (e.shiftKey &amp;&amp; document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey &amp;&amp; document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+}</pre>
+
+<h4>タブ</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>キー</th><th>動作</th></tr></thead>
+  <tbody>
+    <tr><td><code>←</code> / <code>→</code></td><td>タブを切り替える</td></tr>
+    <tr><td><code>Home</code></td><td>最初のタブに移動する</td></tr>
+    <tr><td><code>End</code></td><td>最後のタブに移動する</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h4>アコーディオン</h4>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>キー</th><th>動作</th></tr></thead>
+  <tbody>
+    <tr><td><code>Enter</code> / <code>Space</code></td><td>アコーディオンの開閉を切り替える</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="s5-4">5-4. 対応フロー</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>ステップ</th><th>内容</th></tr></thead>
+  <tbody>
+    <tr><td>1. 要件確認</td><td>案件のアクセシビリティ要件を確認する。要件がなければ「5-1. 全案件共通」のみ対応</td></tr>
+    <tr><td>2. 対象コンポーネントの洗い出し</td><td>モーダル・タブ・アコーディオン等、aria 属性やキーボード操作が必要なコンポーネントをリストアップ</td></tr>
+    <tr><td>3. 実装</td><td>本章のコード例に沿って aria 属性とキーボード操作を実装</td></tr>
+    <tr><td>4. 確認</td><td>キーボードのみで全操作が完了できるか確認する。スクリーンリーダー（macOS の VoiceOver 等）での読み上げも可能な範囲で確認</td></tr>
   </tbody>
 </table>
 </div>
@@ -1285,7 +1357,7 @@ letter-spacing: 0.1em;</pre>
   <thead><tr><th style="white-space:nowrap">日付</th><th style="white-space:nowrap">バージョン</th><th>変更内容</th><th style="white-space:nowrap">更新者</th></tr></thead>
   <tbody>
     <!-- ▼ 新しい更新はここに追加 ▼ -->
-    <tr><td>2026/03/31</td><td>v1.0.0</td><td>初版作成。HTML / CSS / JavaScript / アクセシビリティ / Git運用 / デザインカンプの各基準を策定</td><td>亀井</td></tr>
+    <tr><td>2026/03/31</td><td>v1.0.0</td><td>初版作成。HTML / CSS / JavaScript / アクセシビリティの各基準を策定</td><td>亀井</td></tr>
   </tbody>
 </table>
 </div>
@@ -1297,6 +1369,68 @@ letter-spacing: 0.1em;</pre>
 <strong>更新者</strong>：名前または GitHub アカウント名。
 </div>
 
-</main>
+<script>
+// Dark mode
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  document.getElementById('theme-toggle').textContent = next === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('theme', next);
+}
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+    if (saved === 'dark') document.getElementById('theme-toggle').textContent = '☀️';
+  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('theme-toggle').textContent = '☀️';
+  }
+})();
+
+// Mobile menu
+function toggleMenu() {
+  document.querySelector('.sidebar').classList.toggle('is-open');
+  document.getElementById('overlay').classList.toggle('is-visible');
+}
+document.querySelectorAll('.sidebar nav a').forEach(a => {
+  a.addEventListener('click', () => {
+    if (window.innerWidth <= 960) toggleMenu();
+  });
+});
+
+// Scroll progress
+window.addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = h > 0 ? (window.scrollY / h) * 100 : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+});
+
+// Scroll spy
+(function() {
+  const links = document.querySelectorAll('.sidebar nav a');
+  const ids = Array.from(links).map(a => a.getAttribute('href').slice(1)).filter(Boolean);
+  const sections = ids.map(id => document.getElementById(id)).filter(Boolean);
+  let ticking = false;
+  function update() {
+    const offset = 120;
+    let current = '';
+    sections.forEach(sec => {
+      if (sec.getBoundingClientRect().top <= offset) current = sec.id;
+    });
+    links.forEach(a => {
+      const href = a.getAttribute('href').slice(1);
+      a.classList.toggle('is-active', href === current);
+    });
+    ticking = false;
+  }
+  window.addEventListener('scroll', () => {
+    if (!ticking) { requestAnimationFrame(update); ticking = true; }
+  });
+  update();
+})();
+</script>
 </body>
 </html>
